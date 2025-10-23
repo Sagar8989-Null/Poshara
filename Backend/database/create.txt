@@ -1,0 +1,61 @@
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    email VARCHAR(160) UNIQUE NOT NULL,
+    password_hash VARCHAR(256) NOT NULL,
+    role ENUM('restaurant','ngo','volunteer','admin') NOT NULL,
+    joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE restaurants (
+    restaurant_id INT PRIMARY KEY,
+    name VARCHAR(150) NOT NULL,
+    address VARCHAR(300),
+    city VARCHAR(100),
+    total_donations INT DEFAULT 0,
+    FOREIGN KEY (restaurant_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE ngos (
+    ngo_id INT PRIMARY KEY,
+    organization_name VARCHAR(150) NOT NULL,
+    address VARCHAR(300),
+    city VARCHAR(100),
+    total_received INT DEFAULT 0,
+    FOREIGN KEY (ngo_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE volunteers (
+    volunteer_id INT PRIMARY KEY,
+    phone VARCHAR(20),
+    city VARCHAR(100),
+    total_transports INT DEFAULT 0,
+    FOREIGN KEY (volunteer_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE TABLE donations (
+    donation_id INT AUTO_INCREMENT PRIMARY KEY,
+    restaurant_id INT NOT NULL,
+    food_type VARCHAR(100),
+    quantity INT,
+    unit VARCHAR(50),
+    expiry_time DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('available','picked_up','delivered','expired') DEFAULT 'available',
+    description TEXT,
+    FOREIGN KEY (restaurant_id) REFERENCES restaurants(restaurant_id) ON DELETE CASCADE
+);
+
+CREATE TABLE transports (
+    transport_id INT AUTO_INCREMENT PRIMARY KEY,
+    donation_id INT NOT NULL,
+    volunteer_id INT NOT NULL,
+    ngo_id INT NOT NULL,
+    pickup_time DATETIME,
+    delivery_time DATETIME,
+    status ENUM('assigned','in_transit','delivered','cancelled') DEFAULT 'assigned',
+    distance_km FLOAT DEFAULT 0,
+    FOREIGN KEY (donation_id) REFERENCES donations(donation_id) ON DELETE CASCADE,
+    FOREIGN KEY (volunteer_id) REFERENCES volunteers(volunteer_id) ON DELETE CASCADE,
+    FOREIGN KEY (ngo_id) REFERENCES ngos(ngo_id) ON DELETE CASCADE
+);
