@@ -1,18 +1,5 @@
-// import React from "react";
-// import Signup from "./components/Signup";
-
-// function App() {
-//   return (
-//     <div>
-//       <Signup />
-//     </div>
-//   );
-// }
-
-// export default App;
-
-
 import React, { useState } from 'react';
+import { Upload, FileText, Loader2, X } from 'lucide-react';
 
 export default function OCRImageExtractor() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -24,6 +11,7 @@ export default function OCRImageExtractor() {
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Check if it's an image
       if (!file.type.startsWith('image/')) {
         setError('Please select a valid image file');
         return;
@@ -33,6 +21,7 @@ export default function OCRImageExtractor() {
       setError('');
       setExtractedText('');
 
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -108,6 +97,7 @@ export default function OCRImageExtractor() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg p-8">
+          {/* Upload Area */}
           {!imagePreview ? (
             <div
               onDragOver={handleDragOver}
@@ -122,9 +112,7 @@ export default function OCRImageExtractor() {
                 id="image-upload"
               />
               <label htmlFor="image-upload" className="cursor-pointer">
-                <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
+                <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <p className="text-lg text-gray-700 mb-2">
                   Click to upload or drag and drop
                 </p>
@@ -135,6 +123,7 @@ export default function OCRImageExtractor() {
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Image Preview */}
               <div className="relative">
                 <img
                   src={imagePreview}
@@ -145,12 +134,11 @@ export default function OCRImageExtractor() {
                   onClick={handleReset}
                   className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
+              {/* Extract Button */}
               <button
                 onClick={handleExtractText}
                 disabled={loading}
@@ -158,17 +146,12 @@ export default function OCRImageExtractor() {
               >
                 {loading ? (
                   <>
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <Loader2 className="w-5 h-5 animate-spin" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <FileText className="w-5 h-5" />
                     Extract Text
                   </>
                 )}
@@ -176,18 +159,18 @@ export default function OCRImageExtractor() {
             </div>
           )}
 
+          {/* Error Message */}
           {error && (
             <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
+          {/* Extracted Text */}
           {extractedText && (
             <div className="mt-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                <FileText className="w-5 h-5" />
                 Extracted Text:
               </h2>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-32 max-h-96 overflow-y-auto">
@@ -197,18 +180,19 @@ export default function OCRImageExtractor() {
                 onClick={() => navigator.clipboard.writeText(extractedText)}
                 className="mt-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm"
               >
-                📋 Copy to Clipboard
+                Copy to Clipboard
               </button>
             </div>
           )}
         </div>
 
+        {/* Instructions */}
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <h3 className="font-semibold text-gray-800 mb-3">Backend Setup Instructions:</h3>
           <div className="text-sm text-gray-600 space-y-2">
             <p>1. Install required packages:</p>
             <code className="block bg-gray-100 p-2 rounded">pip install flask flask-cors easyocr</code>
-            <p>2. Save the Flask server code as <code>server.py</code></p>
+            <p>2. Save the Flask server code (see below) as <code>server.py</code></p>
             <p>3. Run the server:</p>
             <code className="block bg-gray-100 p-2 rounded">python server.py</code>
           </div>
@@ -217,3 +201,5 @@ export default function OCRImageExtractor() {
     </div>
   );
 }
+
+

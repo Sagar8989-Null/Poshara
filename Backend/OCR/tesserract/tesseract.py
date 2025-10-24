@@ -5,7 +5,8 @@ import pytesseract
 from dotenv import load_dotenv
 from azure.ai.inference import ChatCompletionsClient
 from azure.core.credentials import AzureKeyCredential
-from Prompts import prompt
+# from ..Prompts import prompt
+# from Prompts import prompt
 
 # load_dotenv()
 # app = Flask(__name__)
@@ -19,7 +20,7 @@ from Prompts import prompt
 # )
 
 
-img = Image.open('photos/4.jpg')
+img = Image.open('../photos/13.jpg')
 extracted_text = pytesseract.image_to_string(img)
 
 # response = client.complete(

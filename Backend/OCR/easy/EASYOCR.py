@@ -5,7 +5,7 @@ import easyocr
 reader = easyocr.Reader(['en'])
 
 # Path to the image
-image_path = 'photos/4.jpg'
+image_path = '../photos/13.jpg'
 
 # Run OCR
 results = reader.readtext(image_path, detail=0)  # detail=0 returns only text
