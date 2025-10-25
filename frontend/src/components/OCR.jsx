@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './OCR.css';
+import Cropper from 'react-easy-crop';
 
 const OCRImageExtractor = () => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -8,6 +9,11 @@ const OCRImageExtractor = () => {
   const [llmOutput, setLlmOutput] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -39,8 +45,11 @@ const OCRImageExtractor = () => {
     setLoading(true);
     setError('');
 
+    const croppedBlob = await getCroppedImageBlob();
+    const file = new File([croppedBlob], selectedImage.name, { type: 'image/jpeg' });
+
     const formData = new FormData();
-    formData.append('image', selectedImage);
+    formData.append('image', file);
 
     try {
       const response = await fetch('http://localhost:5000/api/ocr', {
@@ -115,6 +124,50 @@ const OCRImageExtractor = () => {
     );
   };
 
+  const getCroppedImageBlob = async () => {
+
+    const image = new Image();
+    image.src = imagePreview;
+    await new Promise(r => (image.onload = r));
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    const { width, height } = croppedAreaPixels;
+    canvas.width = width;
+    canvas.height = height;
+    
+    ctx.translate(width / 2, height / 2);
+    ctx.rotate((rotation * Math.PI) / 180);
+    ctx.translate(-width / 2, -height / 2);
+    
+    ctx.drawImage(
+      image,
+      croppedAreaPixels.x,
+      croppedAreaPixels.y,
+      width,
+      height,
+      0,
+      0,
+      width,
+      height
+    );
+    
+    return new Promise(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/jpeg');
+    if (!croppedAreaPixels) 
+      {
+      // If user did not crop, send full image
+        return selectedImage;
+      }
+    });
+
+  };
+
+  const onCropComplete = (_, croppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
   return (
     <div className="ocr-container">
       <div className="ocr-wrapper">
@@ -151,22 +204,33 @@ const OCRImageExtractor = () => {
             </div>
           ) : (
             <div className="preview-section">
-              <div className="image-preview-wrapper">
-                <img
-                  src={imagePreview}
-                  alt="Preview"
-                  className="image-preview"
+              <div className="crop-container">
+                <Cropper
+                  image={imagePreview}
+                  crop={crop}
+                  zoom={zoom}
+                  rotation={rotation}
+                  onCropChange={setCrop}
+                  onZoomChange={setZoom}
+                  onRotationChange={setRotation}
+                  onCropComplete={onCropComplete}
+                  aspect={1} // You can change to free ratio later
                 />
-                <button
-                  onClick={handleReset}
-                  className="reset-button"
-                  title="Remove image"
-                >
-                  <svg className="reset-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
               </div>
+
+              <div className="edit-controls">
+                <button onClick={() => setRotation(rotation - 90)}>Rotate Left</button>
+                <button onClick={() => setRotation(rotation + 90)}>Rotate Right</button>
+                <input
+                  type="range"
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  value={zoom}
+                  onChange={(e) => setZoom(e.target.value)}
+                />
+              </div>
+
 
               <button
                 onClick={handleExtractText}

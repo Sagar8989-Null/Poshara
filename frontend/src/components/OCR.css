@@ -357,6 +357,21 @@
   text-decoration: underline;
 }
 
+.crop-container {
+  position: relative;
+  height: 350px;
+  width: 100%;
+  background: #181818;
+}
+
+.edit-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .ocr-container {
