@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { Upload, FileText, Loader2, X } from 'lucide-react';
+import './OCR.css';
 
-export default function OCRImageExtractor() {
+const OCRImageExtractor = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [extractedText, setExtractedText] = useState('');
+  const [llmOutput, setLlmOutput] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Check if it's an image
       if (!file.type.startsWith('image/')) {
         setError('Please select a valid image file');
         return;
@@ -20,8 +20,8 @@ export default function OCRImageExtractor() {
       setSelectedImage(file);
       setError('');
       setExtractedText('');
+      setLlmOutput(null);
 
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
@@ -53,7 +53,8 @@ export default function OCRImageExtractor() {
       }
 
       const data = await response.json();
-      setExtractedText(data.text || 'No text found in image');
+      setExtractedText(data.extracted_text || 'No text found in image');
+      setLlmOutput(data.llm_output || null);
     } catch (err) {
       setError('Error: ' + err.message + '. Make sure the Flask server is running on port 5000.');
     } finally {
@@ -65,6 +66,7 @@ export default function OCRImageExtractor() {
     setSelectedImage(null);
     setImagePreview(null);
     setExtractedText('');
+    setLlmOutput(null);
     setError('');
   };
 
@@ -79,6 +81,7 @@ export default function OCRImageExtractor() {
       setSelectedImage(file);
       setError('');
       setExtractedText('');
+      setLlmOutput(null);
 
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -88,118 +91,174 @@ export default function OCRImageExtractor() {
     }
   };
 
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const renderLLMOutput = () => {
+    if (!llmOutput) return null;
+
+    if (llmOutput.error) {
+      return (
+        <div className="error-box">
+          {llmOutput.error}
+        </div>
+      );
+    }
+
+    return (
+      <div className="llm-output">
+        <pre className="json-output">
+          {JSON.stringify(llmOutput, null, 2)}
+        </pre>
+      </div>
+    );
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">OCR Text Extractor</h1>
-          <p className="text-gray-600">Upload any image to extract text using EasyOCR</p>
+    <div className="ocr-container">
+      <div className="ocr-wrapper">
+        <div className="ocr-header">
+          <h1 className="ocr-title">AI-Powered OCR Extractor</h1>
+          <p className="ocr-subtitle">Upload any image to extract and analyze text with AI</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          {/* Upload Area */}
+        <div className="ocr-card">
           {!imagePreview ? (
             <div
               onDragOver={handleDragOver}
               onDrop={handleDrop}
-              className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-indigo-500 transition-colors cursor-pointer"
+              className="upload-area"
             >
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleImageSelect}
-                className="hidden"
+                className="file-input"
                 id="image-upload"
               />
-              <label htmlFor="image-upload" className="cursor-pointer">
-                <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-lg text-gray-700 mb-2">
+              <label htmlFor="image-upload" className="upload-label">
+                <svg className="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="upload-text">
                   Click to upload or drag and drop
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="upload-subtext">
                   Supports JPG, PNG, BMP, TIFF, WebP, GIF
                 </p>
               </label>
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Image Preview */}
-              <div className="relative">
+            <div className="preview-section">
+              <div className="image-preview-wrapper">
                 <img
                   src={imagePreview}
                   alt="Preview"
-                  className="w-full max-h-96 object-contain rounded-lg border-2 border-gray-200"
+                  className="image-preview"
                 />
                 <button
                   onClick={handleReset}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                  className="reset-button"
+                  title="Remove image"
                 >
-                  <X className="w-5 h-5" />
+                  <svg className="reset-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
 
-              {/* Extract Button */}
               <button
                 onClick={handleExtractText}
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className={`extract-button ${loading ? 'loading' : ''}`}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
+                    <svg className="spinner" fill="none" viewBox="0 0 24 24">
+                      <circle className="spinner-circle" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="spinner-path" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing with AI...
                   </>
                 ) : (
                   <>
-                    <FileText className="w-5 h-5" />
-                    Extract Text
+                    <svg className="extract-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Extract & Analyze with AI
                   </>
                 )}
               </button>
             </div>
           )}
 
-          {/* Error Message */}
           {error && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
+            <div className="error-alert">
+              <svg className="error-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Extracted Text */}
-          {extractedText && (
-            <div className="mt-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Extracted Text:
-              </h2>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-32 max-h-96 overflow-y-auto">
-                <p className="text-gray-700 whitespace-pre-wrap">{extractedText}</p>
-              </div>
-              <button
-                onClick={() => navigator.clipboard.writeText(extractedText)}
-                className="mt-3 text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-              >
-                Copy to Clipboard
-              </button>
+          {(extractedText || llmOutput) && (
+            <div className="results-section">
+              {extractedText && (
+                <div className="result-block">
+                  <div className="result-header">
+                    <h2 className="result-title">
+                      <svg className="result-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Extracted Text (OCR)
+                    </h2>
+                    <button
+                      onClick={() => copyToClipboard(extractedText)}
+                      className="copy-button"
+                      title="Copy to clipboard"
+                    >
+                      <svg className="copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                  <div className="text-output">
+                    <p className="text-content">{extractedText}</p>
+                  </div>
+                </div>
+              )}
+
+              {llmOutput && (
+                <div className="result-block">
+                  <div className="result-header">
+                    <h2 className="result-title">
+                      <svg className="result-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      AI Analysis (Structured Data)
+                    </h2>
+                    <button
+                      onClick={() => copyToClipboard(JSON.stringify(llmOutput, null, 2))}
+                      className="copy-button"
+                      title="Copy JSON"
+                    >
+                      <svg className="copy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy JSON
+                    </button>
+                  </div>
+                  {renderLLMOutput()}
+                </div>
+              )}
             </div>
           )}
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-8 bg-white rounded-lg shadow p-6">
-          <h3 className="font-semibold text-gray-800 mb-3">Backend Setup Instructions:</h3>
-          <div className="text-sm text-gray-600 space-y-2">
-            <p>1. Install required packages:</p>
-            <code className="block bg-gray-100 p-2 rounded">pip install flask flask-cors easyocr</code>
-            <p>2. Save the Flask server code (see below) as <code>server.py</code></p>
-            <p>3. Run the server:</p>
-            <code className="block bg-gray-100 p-2 rounded">python server.py</code>
-          </div>
         </div>
       </div>
     </div>
   );
-}
+};
 
-
+export default OCRImageExtractor;

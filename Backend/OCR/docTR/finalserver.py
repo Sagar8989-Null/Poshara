@@ -7,50 +7,48 @@ import json
 from werkzeug.utils import secure_filename
 import tempfile
 from dotenv import load_dotenv
-from azure.ai.inference import ChatCompletionsClient
-from azure.core.credentials import AzureKeyCredential
+from openai import OpenAI
 
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for React frontend
+# CORS(app)  # Enable CORS for React frontend
+CORS(app, resources={r"/api/*": {"origins": "*"}})  # Enable CORS for all API routes
 
 # Initialize docTR OCR model (loads once at startup)
 print("Loading docTR OCR model... This may take a moment on first run.")
 model = ocr_predictor(det_arch='db_resnet50', reco_arch='crnn_vgg16_bn', pretrained=True)
 print("docTR model loaded successfully!")
 
-# Initialize Azure AI client
+# Initialize GitHub Models client
+token = os.getenv("GITHUB_TOKEN")
 endpoint = "https://models.github.ai/inference"
-token = os.getenv("API_KEY")
+model_name = "openai/gpt-4o-mini"
 
-client = ChatCompletionsClient(
-    endpoint=endpoint,
-    credential=AzureKeyCredential(token)
-)
+# Check if API key is loaded
+if not token:
+    print("\n" + "="*50)
+    print("WARNING: GITHUB_TOKEN not found in environment!")
+    print("Please create a .env file with: GITHUB_TOKEN=your_token_here")
+    print("="*50 + "\n")
+    client = None
+else:
+    print(f"GitHub Token loaded: {token[:10]}...")
+    client = OpenAI(
+        base_url=endpoint,
+        api_key=token,
+    )
 
 # System prompt for LLM
-SYSTEM_PROMPT = '''
-            Extract Name of Product_name,manufacturer_name,manufacture_date,expiry_date,shelf_life,batch_number from given text and return it in a json format.           
-            Sample text :
-                            Amul Taaza Homogenised Toned Milk  
-                            Manufactured & Packed by: Gujarat Co-operative Milk Marketing Federation Ltd., Anand, India  
-                            Batch No: A23M08    
-                            Manufacture Date: 12/09/2025  
-                            Best Before: 7 days from packaging  
-                            Expiry Date: 19/09/2025
-                            Net Volume: 1L
+SYSTEM_PROMPT = """You are a helpful assistant that extracts structured information from documents and certificates.
+Extract key information like:
+- Document type
+- Names
+- Dates
+- Organizations
+- Key details
 
-            out put should look like : {
-                                            "product_name": "Amul Taaza Homogenised Toned Milk",
-                                            "manufacturer_name": "Gujarat Co-operative Milk Marketing Federation Ltd.",
-                                            "manufacture_date": "12-09-2025",
-                                            "expiry_date": "19-09-2025",
-                                            "shelf_life": "7 days from packaging",
-                                            "batch_number": "A23M08"
-                                        }                               
-            If some info is missing in given input put the value as none in the json.
-        '''
+Return the response as a clean JSON object."""
 
 # Allowed image extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'tif', 'webp'}
@@ -60,15 +58,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def extract_text_from_image_doctr(image_path):
-    """
-    Extracts text from an image using the docTR OCR library.
-    
-    Args:
-        image_path (str): The path to the input image file.
-    
-    Returns:
-        str: The extracted text from the image.
-    """
+  
     # Load the image as a DocumentFile object
     doc = DocumentFile.from_images(image_path)
     
@@ -81,25 +71,24 @@ def extract_text_from_image_doctr(image_path):
     return extracted_text
 
 def process_with_llm(extracted_text):
-    """
-    Process the extracted text with Azure AI LLM.
+
+    # Check if client is initialized
+    if client is None:
+        return {"error": "GITHUB_TOKEN not configured. Please add GITHUB_TOKEN to .env file"}
     
-    Args:
-        extracted_text (str): The text extracted from OCR
-    
-    Returns:
-        dict: Structured output from LLM
-    """
     try:
-        response = client.complete(
-            model="gpt-4o-mini",
+        response = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Extract structured information from this text:\n\n{extracted_text}"}
-            ]
+            ],
+            temperature=1.0,
+            top_p=1.0,
+            max_tokens=1000,
+            model=model_name
         )
         
-        model_output = response.choices[0].message["content"]
+        model_output = response.choices[0].message.content
         
         # Clean up markdown code blocks if present
         if model_output.startswith("```"):
@@ -114,7 +103,10 @@ def process_with_llm(extracted_text):
         return parsed_output
     
     except Exception as e:
-        return {"error": f"LLM processing failed: {str(e)}"}
+        error_msg = str(e)
+        if "Unauthorized" in error_msg or "401" in error_msg:
+            return {"error": "Invalid GitHub Token. Please check your GITHUB_TOKEN in .env file"}
+        return {"error": f"LLM processing failed: {error_msg}"}
 
 @app.route('/api/ocr', methods=['POST'])
 def extract_text():
@@ -142,13 +134,12 @@ def extract_text():
         
         # Step 1: Perform OCR using docTR
         extracted_text = extract_text_from_image_doctr(temp_path)
-        print(extracted_text)
-
+        print(extract_text)
+        
         # Step 2: Process with LLM
         llm_output = process_with_llm(extracted_text)
-        print("LLM OUTPUT : /n")
         print(llm_output)
-        
+
         # Clean up temporary file
         os.remove(temp_path)
         
@@ -170,12 +161,12 @@ def health_check():
     return jsonify({
         'status': 'Server is running', 
         'ocr_model': 'docTR',
-        'llm_model': 'gpt-4o-mini'
+        'llm_model': 'openai/gpt-4o-mini'
     })
 
 if __name__ == '__main__':
     print("\n" + "="*50)
-    print("docTR + LLM OCR Server Starting...")
+    print("docTR + GitHub Models OCR Server Starting...")
     print("Server will run on: http://localhost:5000")
     print("="*50 + "\n")
     app.run(debug=True, host='0.0.0.0', port=5000)
