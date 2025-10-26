@@ -12,7 +12,7 @@ Note:- requirements.txt should look like modelname_ENV_requirements.txt
 
     pip install -r modelname_ENV_requirements.txt
 ## 4. Run your File ( This is our BackEnd server File)
-    py file_name.py
+    py finalserver.py
 ## 5. Now start your frontend server
 Ensure that OCR Component is not commented out 
 
