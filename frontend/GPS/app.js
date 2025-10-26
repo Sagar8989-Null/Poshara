@@ -12,14 +12,19 @@ app.set("view engine",'ejs');
 app.use(express.static(path.join(__dirname,"public")));
 
 io.on("connection",function(socket){
+
     socket.on("send-location",function(data){
-        io.emit("recieve-location",{id:socket.id,...data});
+        socket.emit("recieve-location",{
+            id:socket.id,
+            ...data
+        });
     })
-    console.log("connected");
+
+    console.log(`${socket.id} - connected`);
 
     socket.on("disconnect",function(){
-        io.emit("user-disconnected",socket.id)
-        console.log("disconnect")
+        socket.emit("user-disconnected",socket.id);
+        console.log(`${socket.id} - disconnected`)
     })
 })
 
@@ -33,6 +38,8 @@ app.get("/data",(req,res)=>{
 })
 
 // const Host = '192.168.56.1';
+// const Host = '192.168.0.103';
+
 const port = 3000;
 
 server.listen(port,()=>{
