@@ -39,6 +39,7 @@ app.post("/api/auth/signup", async (req, res) => {
       "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
       [name, email, hashedPassword, role]
     );
+    console.log("new user signedup")
 
     const userId = result.insertId;
 

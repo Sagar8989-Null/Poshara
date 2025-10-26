@@ -19,10 +19,10 @@ const io = socketio(server, {
 });
 
 // Serve static files from the React build directory (Vite's "dist" folder)
-app.use(express.static(path.join(__dirname, "dist")));
+// app.use(express.static(path.join(__dirname, "dist")));
 
-// Keep serving other static files if needed (e.g., for assets like images)
-app.use(express.static(path.join(__dirname, "public")));
+// // Keep serving other static files if needed (e.g., for assets like images)
+// app.use(express.static(path.join(__dirname, "public")));
 
 // Socket.io connection handling
 io.on("connection", function(socket) {
