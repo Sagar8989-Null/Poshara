@@ -6,7 +6,7 @@ First, create a virtual environment named `ENV`.
     python -m venv ENV
     
 ## 2. actiavte the ENV
-    .\ENV\Scripts\actiavte
+    .\ENV\Scripts\activate
 ## 3. install all dependencies using requirements.txt
 Note:- requirements.txt should look like modelname_ENV_requirements.txt
 
