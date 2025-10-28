@@ -8,14 +8,16 @@ import RestaurantDashboard from "./pages/RestoDash";
 import NGODashboard from "./pages/NgoDash";
 import VolunteerDashboard from "./pages/VolDash";
 import "./App.css";
+import Addresslatlong from "./components/Addresslatlong";
 
 function App() {
   return (
     <Router>
-      <Navbar />
+      {/* <Navbar /> */}
       <div className="content">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Addresslatlong/>}/>
+          {/* <Route path="/" element={<Home />}/> */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard/restaurant" element={<RestaurantDashboard />} />
@@ -24,9 +26,9 @@ function App() {
         </Routes>
       </div>
       <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>🌱 Poshara Frontend Working!</h1>
-      <p>If you can see this, your React app is running fine.</p>
-    </div>
+        <h1>🌱 Poshara Frontend Working!</h1>
+        <p>If you can see this, your React app is running fine.</p>
+      </div>
     </Router>
   );
 }
