@@ -1,0 +1,55 @@
+.home-container {
+  text-align: center;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+}
+
+.hero h1 {
+  font-size: 2em;
+  color: #333;
+}
+
+.hero p {
+  margin-top: 10px;
+  font-size: 1.1em;
+  color: #666;
+}
+
+.cta-buttons {
+  margin-top: 20px;
+}
+
+.cta-buttons button {
+  margin: 8px;
+  padding: 10px 18px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cta-buttons button:hover {
+  background-color: #45a049;
+}
+
+.stats {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 30px;
+  margin-top: 50px;
+}
+
+.stat-card {
+  background-color: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 20px 30px;
+  border-radius: 10px;
+  width: 180px;
+}
+
+.stat-card h2 {
+  color: #4CAF50;
+  font-size: 1.8em;
+}
