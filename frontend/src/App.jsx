@@ -13,11 +13,11 @@ import Addresslatlong from "./components/Addresslatlong";
 function App() {
   return (
     <Router>
-      {/* <Navbar /> */}
+      <Navbar />
       <div className="content">
         <Routes>
-          <Route path="/" element={<Addresslatlong/>}/>
-          {/* <Route path="/" element={<Home />}/> */}
+          {/* <Route path="/" element={<Addresslatlong/>}/> */} {/* This line only for testing Addresslatlong component there is no need of this component on Homepage*/}
+          <Route path="/" element={<Home />}/>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard/restaurant" element={<RestaurantDashboard />} />

@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import React, { useEffect, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../CSS/Map.css";
+// import "../CSS/Map.css";
 
 const Addresslatlong = () => {
     delete L.Icon.Default.prototype._getIconUrl;
@@ -15,18 +15,21 @@ const Addresslatlong = () => {
             "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
     });
 
+    const [position, setPosition] = useState([20.593683, 78.962883]);
 
-    navigator.geolocation.watchPosition(
-        (position) => {
-            const { latitude, longitude } = position.coords;
-            // socket.current.emit("send-location", { latitude, longitude });
-            currentlatitude,currentlongitude =  latitude,longitude;
-        },
-        (error) => console.error(error),
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-    );
+    useEffect(() => {
+        const watcher = navigator.geolocation.watchPosition(
+            (pos) => {
+                const { latitude, longitude } = pos.coords;
+                setPosition([latitude, longitude]);
+            },
+            (err) => {
+                console.error("Geolocation error:", err),
+                    { enableHighAccuracy: true }
+            }
+        );
+    }, []);
 
-    const [position, setPosition] = useState([latitude, longitude]);
 
     const handleDragEnd = (e) => {
         const latlng = e.target.getLatLng();
@@ -34,8 +37,14 @@ const Addresslatlong = () => {
         console.log("New Position:", latlng);
     };
 
+    function RecenterMap({ position }) {
+        const map = useMap();
+        map.setView(position);
+        return null;
+    }
+
     return (
-        <MapContainer center={position} zoom={13} style={{ height: "50vh", width: "100%" }}>
+        <MapContainer center={position} zoom={15} style={{ height: '500px', width: '100%' }}>
             <TileLayer
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
@@ -46,6 +55,7 @@ const Addresslatlong = () => {
             >
                 <Popup>Drag me to change location!</Popup>
             </Marker>
+            <RecenterMap position={position} />
         </MapContainer>
     );
 };
