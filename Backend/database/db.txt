@@ -3,7 +3,7 @@ CREATE TABLE users (
     name VARCHAR(120) NOT NULL,
     email VARCHAR(160) UNIQUE NOT NULL,
     password_hash VARCHAR(256) NOT NULL,
-    role ENUM('restaurant','ngo','volunteer','admin') NOT NULL,                            This is not needed since there is seperate table based on there Role
+    role ENUM('restaurant','ngo','volunteer','admin') NOT NULL,                            
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

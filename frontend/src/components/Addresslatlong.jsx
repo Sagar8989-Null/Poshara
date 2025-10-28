@@ -4,7 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 // import "../CSS/Map.css";
 
-const Addresslatlong = () => {
+const Addresslatlong = ({ onLocationChange }) => {
     delete L.Icon.Default.prototype._getIconUrl;
     L.Icon.Default.mergeOptions({
         iconRetinaUrl:
@@ -15,7 +15,8 @@ const Addresslatlong = () => {
             "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
     });
 
-    const [position, setPosition] = useState([20.593683, 78.962883]);
+    const defaultPosition = [20.593683, 78.962883];
+    const [position, setPosition] = useState(defaultPosition);
 
     useEffect(() => {
         const watcher = navigator.geolocation.watchPosition(
@@ -35,6 +36,9 @@ const Addresslatlong = () => {
         const latlng = e.target.getLatLng();
         setPosition([latlng.lat, latlng.lng]);
         console.log("New Position:", latlng);
+        if (onLocationChange) {
+          onLocationChange(latlng.lat, latlng.lng);
+        };
     };
 
     function RecenterMap({ position }) {
@@ -44,19 +48,26 @@ const Addresslatlong = () => {
     }
 
     return (
-        <MapContainer center={position} zoom={15} style={{ height: '500px', width: '100%' }}>
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker
-                position={position}
-                draggable={true}
-                eventHandlers={{ dragend: handleDragEnd }}
-            >
-                <Popup>Drag me to change location!</Popup>
-            </Marker>
-            <RecenterMap position={position} />
-        </MapContainer>
+        <>
+            <MapContainer center={position} zoom={15} style={{ height: '500px', width: '100%' }}>
+                <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
+                <Marker
+                    position={position}
+                    draggable={true}
+                    eventHandlers={{ dragend: handleDragEnd }}
+                >
+                    <Popup>Drag me to change location!</Popup>
+                </Marker>
+                <RecenterMap position={position} />
+            </MapContainer>
+            <span style={{ color: "white", fontSize: "18px" }}>
+                {position[0].toFixed(6)} , {position[1].toFixed(6)}
+            </span>
+            <br />
+            <br />
+        </>
     );
 };
 

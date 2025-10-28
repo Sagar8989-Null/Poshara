@@ -1,62 +1,79 @@
+// src/components/Signup.jsx
 import React, { useState } from "react";
+import Addresslatlong from "../components/Addresslatlong";
 
 const Signup = () => {
-  const [formData, setFormData] = useState({ username: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "volunteer",
+    latitude: "",
+    longitude: "",
+  });
+
+  const [message, setMessage] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Signup data:", formData);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      setMessage(data.message);
+      if (res.ok) {
+        setFormData({ name: "", email: "", password: "", role: "volunteer" });
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("Error submitting form");
+    }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-pink-50">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-sm">
-        <h2 className="text-2xl font-semibold text-center mb-6 text-pink-700">
-          Create Account
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            name="username"
-            type="text"
-            placeholder="Username"
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            required
+    <div style={{ maxWidth: 400, margin: "50px auto", padding: 20, border: "1px solid #ccc", borderRadius: 8 }}>
+      <h2>Signup</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Name</label>
+        <input type="text" name="name" value={formData.name} onChange={handleChange} required />
+        <br /><br />
+
+        <label>Email</label>
+        <input type="email" name="email" value={formData.email} onChange={handleChange} required />
+        <br /><br />
+
+        <label>Password</label>
+        <input type="password" name="password" value={formData.password} onChange={handleChange} required />
+        <br /><br />
+
+        <label>Role</label>
+        <select name="role" value={formData.role} onChange={handleChange}>
+          <option value="volunteer">Volunteer</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="ngo">NGO</option>
+        </select>
+        <br /><br />
+
+        {formData.role !== "volunteer" && (
+          <Addresslatlong
+            onLocationChange={(lat, lng) =>
+              setFormData({ ...formData, latitude: lat, longitude: lng })
+            }
           />
-          <input
-            name="email"
-            type="email"
-            placeholder="Email"
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            required
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Password"
-            onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3 rounded-lg transition"
-          >
-            Sign Up
-          </button>
-        </form>
-        <p className="text-center text-sm text-gray-500 mt-4">
-          Already have an account?{" "}
-          <a href="/login" className="text-pink-600 font-medium hover:underline">
-            Login
-          </a>
-        </p>
-      </div>
+        )}
+        <button type="submit">Signup</button>
+      </form>
+
+      {message && <p>{message}</p>}
     </div>
   );
 };

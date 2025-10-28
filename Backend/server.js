@@ -27,10 +27,15 @@ db.connect((err) => {
 
 // Signup route
 app.post("/api/auth/signup", async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, latitude, longitude } = req.body;
 
-  if (!name || !email || !password || !role)
+  if (!name || !email || !password || !role) {
     return res.status(400).json({ message: "All fields required" });
+  }
+
+  if ((role === "restaurant" || role === "ngo") && (!latitude || !longitude)) {
+    return res.status(400).json({ message: "Please set your location on the map" });
+  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,21 +44,24 @@ app.post("/api/auth/signup", async (req, res) => {
       "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
       [name, email, hashedPassword, role]
     );
-    console.log("new user signedup")
 
     const userId = result.insertId;
 
     if (role === "restaurant") {
       await db.promise().query(
-        "INSERT INTO restaurants (restaurant_id, name) VALUES (?, ?)",
-        [userId, name]
+        "INSERT INTO restaurants (restaurant_id, name, latitude, longitude) VALUES (?, ?, ?, ?)",
+        [userId, name, latitude, longitude]
       );
-    } else if (role === "ngo") {
+    }
+
+    if (role === "ngo") {
       await db.promise().query(
-        "INSERT INTO ngos (ngo_id, organization_name) VALUES (?, ?)",
-        [userId, name]
+        "INSERT INTO ngos (ngo_id, organization_name, latitude, longitude) VALUES (?, ?, ?, ?)",
+        [userId, name, latitude, longitude]
       );
-    } else if (role === "volunteer") {
+    }
+
+    if (role === "volunteer") {
       await db.promise().query(
         "INSERT INTO volunteers (volunteer_id) VALUES (?)",
         [userId]
@@ -66,6 +74,7 @@ app.post("/api/auth/signup", async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+
 
 // Leaderboard route
 app.get("/api/leaderboard", async (req, res) => {
