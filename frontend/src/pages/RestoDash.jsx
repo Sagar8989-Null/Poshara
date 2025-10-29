@@ -1,36 +1,115 @@
-import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import React, { useState } from "react";
+import OCRImageExtractor from "../components/OCR";
 
-const RestoDash = () => {
-  const [position, setPosition] = useState([19.076, 72.8777]); // fallback: Mumbai
+function RestoDash() {
+  const [formData, setFormData] = useState({
+    foodname: "",
+    quantity: "",
+    unit: "",
+    expiryDate: "",
+    description: "",
+  });
 
-  useEffect(() => {
-    const lat = parseFloat(localStorage.getItem("latitude"));
-    const lng = parseFloat(localStorage.getItem("longitude"));
-    if (lat && lng) setPosition([lat, lng]);
-  }, []);
+  const [totalDonations, setTotalDonations] = useState("");
+  const [availableDonations, setAvailableDonations] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5000/donate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      setMessage(data.message);
+
+      if (res.ok) {
+        setFormData({
+          foodname: "",
+          quantity: "",
+          unit: "",
+          expiryDate: "",
+          description: "",
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      setMessage("Error submitting form");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-pink-50 flex flex-col items-center py-10">
-      <h2 className="text-3xl font-semibold text-pink-700 mb-6">
-        🍽️ Restaurant Dashboard
-      </h2>
-      <p className="text-gray-600 mb-4">
-        Welcome back, Restaurant! Your current location is marked below.
-      </p>
+    <div style={{ padding: "2rem" }}>
+      <h1>Restaurant Dashboard 🍽️</h1>
+      <p>Track your food donations and reduce waste here.</p>
 
-      <div className="w-11/12 md:w-3/4 h-[400px] rounded-2xl shadow-lg overflow-hidden border border-pink-200">
-        <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%" }}>
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; OpenStreetMap contributors"
-          />
-          <Marker position={position}>
-            <Popup>Restaurant Location</Popup>
-          </Marker>
-        </MapContainer>
-      </div>
+      <div>Total Donations: {totalDonations}</div>
+      <div>Available: {availableDonations}</div>
+
+      <OCRImageExtractor />
+
+      <form onSubmit={handleSubmit}>
+
+        <label>Food Name:</label>
+        <input
+          type="text"
+          name="foodname"
+          value={formData.foodname}
+          onChange={handleChange}
+          required
+        />
+        <br /><br />
+
+        <label>Quantity:</label>
+        <input
+          type="number"
+          name="quantity"
+          value={formData.quantity}
+          onChange={handleChange}
+          required
+        />
+        <br /><br />
+
+        <label>Unit:</label>
+        <input
+          type="number"
+          name="unit"
+          value={formData.unit}
+          onChange={handleChange}
+          required
+        />
+        <br /><br />
+
+        <label>Expiry Date:</label>
+        <input
+          type="month"
+          name="expiryDate"
+          value={formData.expiryDate}
+          onChange={handleChange}
+        />
+        <br /><br />
+
+        <label>Description:</label>
+        <input
+          type="text"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          required
+        />
+        <br /><br />
+
+        <button type="submit">Submit</button>
+      </form>
+
+      {message && <p>{message}</p>}
     </div>
   );
 };
