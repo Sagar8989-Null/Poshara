@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './OCR.css';
+import '../CSS/OCR.css';
 import Cropper from 'react-easy-crop';
 
 const OCRImageExtractor = () => {
@@ -169,12 +169,6 @@ const OCRImageExtractor = () => {
   };
 
   return (
-    <div className="ocr-container">
-      <div className="ocr-wrapper">
-        <div className="ocr-header">
-          <h1 className="ocr-title">AI-Powered OCR Extractor</h1>
-          <p className="ocr-subtitle">Upload any image to extract and analyze text with AI</p>
-        </div>
 
         <div className="ocr-card">
           {!imagePreview ? (
@@ -320,8 +314,6 @@ const OCRImageExtractor = () => {
             </div>
           )}
         </div>
-      </div>
-    </div>
   );
 };
 
