@@ -1,6 +1,6 @@
 // backend/server.js
 import express from "express";
-import mysql from "mysql2";
+import mysql from "mysql2/promise";
 import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
@@ -8,24 +8,26 @@ import bcrypt from "bcryptjs";
 dotenv.config();
 
 const app = express();
-app.use(cors()); // allow React frontend
+app.use(cors());
 app.use(express.json());
 
-// MySQL connection
-const db = mysql.createPool({
+// ✅ MySQL promise pool
+const db = await mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 10,
 });
 
-// Connect to DB
-db.connect((err) => {
-  if (err) console.error("❌ DB connection failed:", err);
-  else console.log("✅ Connected to MySQL database");
-});
+try {
+  await db.query("SELECT 1");
+  console.log("✅ Connected to MySQL database (promise pool ready)");
+} catch (err) {
+  console.error("❌ Database connection failed:", err);
+}
+
 
 // Signup route
 app.post("/api/auth/signup", async (req, res) => {
@@ -42,7 +44,7 @@ app.post("/api/auth/signup", async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const [result] = await db.promise().query(
+    const [result] = await db.query(
       "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
       [name, email, hashedPassword, role]
     );
@@ -50,21 +52,21 @@ app.post("/api/auth/signup", async (req, res) => {
     const userId = result.insertId;
 
     if (role === "restaurant") {
-      await db.promise().query(
+      await db.query(
         "INSERT INTO restaurants (restaurant_id, name, latitude, longitude) VALUES (?, ?, ?, ?)",
         [userId, name, latitude, longitude]
       );
     }
 
     if (role === "ngo") {
-      await db.promise().query(
+      await db.query(
         "INSERT INTO ngos (ngo_id, organization_name, latitude, longitude) VALUES (?, ?, ?, ?)",
         [userId, name, latitude, longitude]
       );
     }
 
     if (role === "volunteer") {
-      await db.promise().query(
+      await db.query(
         "INSERT INTO volunteers (volunteer_id) VALUES (?)",
         [userId]
       );
@@ -77,6 +79,51 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
+
+// ✅ Login route
+app.post("/api/auth/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password)
+    return res.status(400).json({ message: "All fields required" });
+
+  try {
+    // find user by email
+    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
+
+    if (rows.length === 0)
+      return res.status(401).json({ message: "Invalid email or password" });
+
+    const user = rows[0];
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+
+    if (!validPassword)
+      return res.status(401).json({ message: "Invalid email or password" });
+
+    // get coordinates depending on role
+    let locationQuery = "";
+    if (user.role === "restaurant") locationQuery = "SELECT latitude, longitude FROM restaurants WHERE restaurant_id = ?";
+    if (user.role === "ngo") locationQuery = "SELECT latitude, longitude FROM ngos WHERE ngo_id = ?";
+    if (user.role === "volunteer") locationQuery = "SELECT NULL AS latitude, NULL AS longitude";
+
+    const [loc] = await db.query(locationQuery, [user.user_id]);
+    const coords = loc[0] || { latitude: null, longitude: null };
+
+    res.json({
+      message: "Login successful",
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        role: user.role,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      }
+    });
+  } catch (err) {
+    console.error("Login Error:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 
 // Leaderboard route
 app.get("/api/leaderboard", async (req, res) => {

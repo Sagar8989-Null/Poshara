@@ -112,6 +112,7 @@ function RestoDash() {
       {message && <p>{message}</p>}
     </div>
   );
-}
+};
 
 export default RestoDash;
+
