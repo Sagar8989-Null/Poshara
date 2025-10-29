@@ -34,17 +34,18 @@ const Login = () => {
       // redirect based on role
       switch (data.user.role) {
          case "restaurant":
-            navigate("/dashboard/restaurant");
-            break;
+         navigate("/dashboard/restaurant");
+        break;
          case "ngo":
-            navigate("/dashboard/ngo");
-            break;
+         navigate("/dashboard/ngo");
+        break;
          case "volunteer":
-            navigate("/dashboard/volunteer");
-            break;
-         default:
-            navigate("/");
+         navigate("/dashboard/volunteer");
+        break;
+        default:
+        navigate("/");
       }
+
     } catch (err) {
       console.error("Login error:", err);
       setMessage("Server error");

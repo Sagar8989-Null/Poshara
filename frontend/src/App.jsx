@@ -19,13 +19,13 @@ function App() {
       <div className="content">
         <Routes>
           {/* <Route path="/" element={<Addresslatlong/>}/> This line only for testing Addresslatlong component there is no need of this component on Homepage */}
-          {/* <Route path="/" element={<Home />}/> */}
-          <Route path="/" element={<><RestoDash /></>}/>
+          <Route path="/" element={<Home />}/>
+          {/*<Route path="/" element={<><RestoDash /></>}/>*/}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard/restaurant" element={<RestaurantDashboard />} />
-          <Route path="/dashboard/ngo" element={<NGODashboard />} />
-          <Route path="/dashboard/volunteer" element={<VolunteerDashboard />} />
+          <Route path="/dashboard/restaurant" element={<RestoDash/>} />
+          <Route path="/dashboard/ngo" element={<NgoDash />} />
+          <Route path="/dashboard/volunteer" element={<VolDash />} />
         </Routes>
       </div>
     </Router>
