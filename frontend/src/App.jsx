@@ -6,11 +6,13 @@ import Signup from "./pages/Signup";
 import RestoDash from "./pages/RestoDash";
 import NgoDash from "./pages/NgoDash";
 import VolDash from "./pages/VolDash";
+import Navbar from './components/Navbar'
 import "./App.css";
 
 function App() {
   return (
     <Router>
+      <Navbar/>
       <div className="content">
         <Routes>
           <Route path="/" element={<Home />} />
