@@ -66,8 +66,8 @@
    ============================================ */
 
 .navbar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 16px 32px;
+  background: linear-gradient(135deg, #FDDCBF 0%, #355E3B 100%);
+  padding: 1px 32px;
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -99,7 +99,7 @@
 }
 
 .navbar.scrolled {
-  background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+  background: linear-gradient(135deg, #FDDCBF 0%, #355E3B 100%);
   padding: 12px 32px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
 }
@@ -141,14 +141,14 @@
 }
 
 /* ============================================
-   LOGO STYLES
+   LOGO STYLES - TOP LEFT ALIGNMENT
    ============================================ */
 
 .logo {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  color: #ffffff;
+  color: #FDDCBF;
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.3s ease;
@@ -160,7 +160,7 @@
 }
 
 .logo-icon-wrapper {
-  background: rgba(255, 255, 255, 0.15);
+  background: #355E3B;
   padding: 8px;
   border-radius: 12px;
   display: flex;
@@ -168,12 +168,13 @@
   justify-content: center;
   transition: all 0.3s ease;
   position: relative;
+  margin-top: 2px;
 }
 
 .logo:hover .logo-icon-wrapper {
-  background: rgba(255, 255, 255, 0.25);
+  background: #2a4a2e;
   transform: rotate(5deg);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 20px rgba(53, 94, 59, 0.5);
 }
 
 .logo-icon {
@@ -202,14 +203,12 @@
 }
 
 .logo-text {
-  font-size: 1.75rem;
+  font-size: 40px;
+  text-align: left;
   font-weight: 700;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f0f0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
+  line-height: 1;
+  padding-top: 0;
+  color: #355E3B;
 }
 
 .logo-underline {
@@ -298,11 +297,11 @@
   font-size: 15px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  color: white;
+  color: #FDDCBF;
   position: relative;
   overflow: hidden;
   letter-spacing: 0.3px;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(253, 220, 191, 0.15);
   backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
@@ -468,7 +467,7 @@
     width: 280px;
     height: 100vh;
     flex-direction: column;
-    background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(180deg, #FDDCBF 0%, #355E3B 100%);
     padding: 80px 24px 24px;
     gap: 16px;
     transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -501,7 +500,7 @@
   }
 
   .logo-text {
-    font-size: 1.5rem;
+    font-size: 32px;
   }
 }
 
@@ -511,7 +510,7 @@
   }
 
   .logo-text {
-    font-size: 1.35rem;
+    font-size: 28px;
   }
 
   .nav-buttons {

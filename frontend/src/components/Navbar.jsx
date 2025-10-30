@@ -1,22 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Utensils, Sparkles } from "lucide-react";
 import "../CSS/Navbar.css";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const location = useLocation();
+  const [activeTab, setActiveTab] = useState("home");
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    setIsMenuOpen(false);
-  }, [location]);
 
   useEffect(() => {
     document.body.style.overflow = isMenuOpen ? "hidden" : "unset";
@@ -26,7 +21,13 @@ function Navbar() {
   }, [isMenuOpen]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const isActive = (path) => location.pathname === path;
+  
+  const handleNavClick = (tab) => {
+    setActiveTab(tab);
+    setIsMenuOpen(false);
+  };
+
+  const isActive = (tab) => activeTab === tab;
 
   return (
     <>
@@ -39,14 +40,14 @@ function Navbar() {
 
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
         <div className="navbar-container">
-          <Link to="/" className="logo">
+          <div className="logo" onClick={() => handleNavClick("home")}>
             <div className="logo-icon-wrapper">
               <Utensils className="logo-icon" />
               <Sparkles className="sparkle-icon" size={12} />
             </div>
             <span className="logo-text">Poshara</span>
             <div className="logo-underline"></div>
-          </Link>
+          </div>
 
           <button
             className="menu-toggle"
@@ -60,27 +61,32 @@ function Navbar() {
           </button>
 
           <div className={`nav-buttons ${isMenuOpen ? "active" : ""}`}>
-            <Link to="/" onClick={() => setIsMenuOpen(false)}>
-              <button className={`nav-btn home-btn ${isActive("/") ? "active" : ""}`}>
-                <span className="btn-icon"></span>
-                <span className="btn-label">Home</span>
-                <div className="btn-shine"></div>
-              </button>
-            </Link>
-            <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-              <button className={`nav-btn login-btn ${isActive("/login") ? "active" : ""}`}>
-                <span className="btn-icon"></span>
-                <span className="btn-label">Login</span>
-                <div className="btn-shine"></div>
-              </button>
-            </Link>
-            <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-              <button className={`nav-btn signup-btn ${isActive("/signup") ? "active" : ""}`}>
-                <span className="btn-icon"></span>
-                <span className="btn-label">Signup</span>
-                <div className="btn-shine"></div>
-              </button>
-            </Link>
+            <button 
+              className={`nav-btn home-btn ${isActive("home") ? "active" : ""}`}
+              onClick={() => handleNavClick("home")}
+            >
+              <span className="btn-icon"></span>
+              <span className="btn-label">Home</span>
+              <div className="btn-shine"></div>
+            </button>
+            
+            <button 
+              className={`nav-btn login-btn ${isActive("login") ? "active" : ""}`}
+              onClick={() => handleNavClick("login")}
+            >
+              <span className="btn-icon"></span>
+              <span className="btn-label">Login</span>
+              <div className="btn-shine"></div>
+            </button>
+            
+            <button 
+              className={`nav-btn signup-btn ${isActive("signup") ? "active" : ""}`}
+              onClick={() => handleNavClick("signup")}
+            >
+              <span className="btn-icon"></span>
+              <span className="btn-label">Signup</span>
+              <div className="btn-shine"></div>
+            </button>
           </div>
         </div>
 
