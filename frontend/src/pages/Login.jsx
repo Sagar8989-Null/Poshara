@@ -1,11 +1,18 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, CheckCircle, Sparkles, Shield, Zap } from 'lucide-react';
 import '../CSS/Login.css';
+=======
+// src/pages/Login.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+>>>>>>> daa2d01c15dd1c2d7653852436c7d339a8ad0517
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
+<<<<<<< HEAD
   const [messageType, setMessageType] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +21,13 @@ export default function Login() {
     e.preventDefault();
     setIsLoading(true);
     setMessage("");
+=======
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage("Logging in...");
+>>>>>>> daa2d01c15dd1c2d7653852436c7d339a8ad0517
 
     try {
       const res = await fetch("http://localhost:5000/api/auth/login", {
@@ -24,6 +38,7 @@ export default function Login() {
 
       const data = await res.json();
 
+<<<<<<< HEAD
       if (res.ok) {
         setMessage("Login successful ✅");
         setMessageType("success");
@@ -39,16 +54,48 @@ export default function Login() {
         setMessage(data.message || "Login failed");
         setMessageType("error");
         setIsLoading(false);
+=======
+      if (!res.ok) {
+        setMessage(data.message || "Login failed");
+        return;
+>>>>>>> daa2d01c15dd1c2d7653852436c7d339a8ad0517
       }
+
+      // store user info in localStorage for later use
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      setMessage("Login successful ✅");
+
+      // redirect based on role
+      switch (data.user.role) {
+         case "restaurant":
+         navigate("/dashboard/restaurant");
+        break;
+         case "ngo":
+         navigate("/dashboard/ngo");
+        break;
+         case "volunteer":
+         navigate("/dashboard/volunteer");
+        break;
+        default:
+        navigate("/");
+      }
+
     } catch (err) {
+<<<<<<< HEAD
       console.error(err);
       setMessage("Server error — check connection.");
       setMessageType("error");
       setIsLoading(false);
+=======
+      console.error("Login error:", err);
+      setMessage("Server error");
+>>>>>>> daa2d01c15dd1c2d7653852436c7d339a8ad0517
     }
   };
 
   return (
+<<<<<<< HEAD
     <div className="login-container">
       {/* Animated background orbs */}
       <div className="background-animation">
@@ -216,3 +263,32 @@ export default function Login() {
     </div>
   );
 }
+=======
+    <div style={{ maxWidth: 400, margin: "50px auto", padding: 20, border: "1px solid #ccc", borderRadius: 8 }}>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <label>Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <br /><br />
+        <label>Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <br /><br />
+        <button type="submit">Login</button>
+      </form>
+      {message && <p>{message}</p>}
+    </div>
+  );
+};
+
+export default Login;
+>>>>>>> daa2d01c15dd1c2d7653852436c7d339a8ad0517
