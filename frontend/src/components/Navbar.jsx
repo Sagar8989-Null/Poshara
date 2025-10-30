@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Utensils, Sparkles } from "lucide-react";
 import "../CSS/Navbar.css";
+import { Link } from "react-router-dom";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,7 +22,7 @@ function Navbar() {
   }, [isMenuOpen]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  
+
   const handleNavClick = (tab) => {
     setActiveTab(tab);
     setIsMenuOpen(false);
@@ -61,32 +62,35 @@ function Navbar() {
           </button>
 
           <div className={`nav-buttons ${isMenuOpen ? "active" : ""}`}>
-            <button 
+            <Link
+              to="/"
               className={`nav-btn home-btn ${isActive("home") ? "active" : ""}`}
               onClick={() => handleNavClick("home")}
             >
               <span className="btn-icon"></span>
               <span className="btn-label">Home</span>
               <div className="btn-shine"></div>
-            </button>
-            
-            <button 
+            </Link>
+
+            <Link
+              to="/login"
               className={`nav-btn login-btn ${isActive("login") ? "active" : ""}`}
               onClick={() => handleNavClick("login")}
             >
               <span className="btn-icon"></span>
               <span className="btn-label">Login</span>
               <div className="btn-shine"></div>
-            </button>
-            
-            <button 
+            </Link>
+
+            <Link
+              to="/signup"
               className={`nav-btn signup-btn ${isActive("signup") ? "active" : ""}`}
               onClick={() => handleNavClick("signup")}
             >
               <span className="btn-icon"></span>
               <span className="btn-label">Signup</span>
               <div className="btn-shine"></div>
-            </button>
+            </Link>
           </div>
         </div>
 
