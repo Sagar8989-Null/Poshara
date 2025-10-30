@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, CheckCircle } from 'lucide-react';
-import "../CSS/Login.css";
+import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle, CheckCircle, Sparkles, Shield, Zap } from 'lucide-react';
+import '../CSS/Login.css';
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -57,14 +57,50 @@ export default function Login() {
         <div className="orb orb-3"></div>
       </div>
 
+      {/* Floating particles */}
+      <div className="particles-container">
+        {[...Array(15)].map((_, i) => (
+          <div key={i} className={`particle particle-${i + 1}`}></div>
+        ))}
+      </div>
+
+      {/* Decorative shapes */}
+      <div className="decorative-shapes">
+        <div className="shape shape-1">
+          <Shield size={24} color="#fff" opacity={0.3} />
+        </div>
+        <div className="shape shape-2">
+          <Zap size={20} color="#fff" opacity={0.3} />
+        </div>
+        <div className="shape shape-3">
+          <Sparkles size={22} color="#fff" opacity={0.3} />
+        </div>
+      </div>
+
       <div className="login-card">
-        {/* Header */}
+        {/* Glow effect */}
+        <div className="card-glow"></div>
+        
+        {/* Header with graphics */}
         <div className="login-header">
           <div className="logo-container">
+            <div className="logo-ring"></div>
             <LogIn className="logo-icon" />
           </div>
           <h2 className="login-title">Welcome Back</h2>
           <p className="login-subtitle">Sign in to your account</p>
+          
+          {/* Feature badges */}
+          <div className="feature-badges">
+            <div className="badge">
+              <Shield size={14} />
+              <span>Secure</span>
+            </div>
+            <div className="badge">
+              <Zap size={14} />
+              <span>Fast</span>
+            </div>
+          </div>
         </div>
 
         {/* Form */}
@@ -81,6 +117,7 @@ export default function Login() {
               className="input-field"
               required
             />
+            <div className="input-underline"></div>
           </div>
 
           {/* Password Input */}
@@ -103,6 +140,7 @@ export default function Login() {
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
+            <div className="input-underline"></div>
           </div>
 
           {/* Form Options */}
@@ -128,7 +166,10 @@ export default function Login() {
                 Signing In...
               </>
             ) : (
-              "Sign In"
+              <>
+                <span>Sign In</span>
+                <div className="button-shine"></div>
+              </>
             )}
           </button>
         </form>
