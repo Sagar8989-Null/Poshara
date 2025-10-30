@@ -1,0 +1,114 @@
+body {
+  margin: 0;
+  background-color: #fafafa;
+  font-family: "Poppins", sans-serif;
+  color: #333;
+}
+
+.slider-container {
+  width: min(1200px, 90vw);
+  margin: 50px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+}
+
+/* 🌸 Slider base */
+.slider {
+  width: 100%;
+  height: var(--height);
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, #000 10% 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 10% 90%, transparent);
+  position: relative;
+}
+
+/* 🌿 Inner list */
+.slider .list {
+  display: flex;
+  width: 100%;
+  min-width: calc(var(--width) * var(--quantity));
+  position: relative;
+}
+
+/* ✨ Each testimonial block */
+.slider .list .item {
+  width: var(--width);
+  height: var(--height);
+  position: absolute;
+  left: 100%;
+  animation: autoRun 25s linear infinite;
+  animation-delay: calc((25s / var(--quantity)) * (var(--position) - 1) - 25s) !important;
+  transition: all 0.4s ease;
+  cursor: pointer;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 15px;
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 14px;
+
+  background: #ffffff;
+  color: #333;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 🌈 Hover interaction */
+.slider:hover .item {
+  animation-play-state: paused !important;
+  filter: brightness(0.9);
+  transform: translateY(-2px);
+}
+
+.slider .item:hover {
+  filter: none;
+  background: linear-gradient(135deg, #81c784, #66bb6a);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(102, 187, 106, 0.5);
+}
+
+/* 🌀 Forward keyframes */
+@keyframes autoRun {
+  from {
+    left: 100%;
+  }
+  to {
+    left: calc(var(--width) * -1);
+  }
+}
+
+/* 🌼 Reverse direction animation */
+.slider[reverse="true"] .item {
+  animation: reversePlay 25s linear infinite;
+  animation-delay: calc((25s / var(--quantity)) * (var(--position) - 1) - 25s) !important;
+}
+
+@keyframes reversePlay {
+  from {
+    left: calc(var(--width) * -1);
+  }
+  to {
+    left: 100%;
+  }
+}
+
+/* 🌟 Responsive adjustments */
+@media (max-width: 768px) {
+  .slider .list .item {
+    font-size: 0.85rem;
+    --width: 280px;
+    --height: 70px;
+  }
+}
+
+@media (max-width: 480px) {
+  .slider .list .item {
+    font-size: 0.8rem;
+    --width: 220px;
+    --height: 60px;
+  }
+}
