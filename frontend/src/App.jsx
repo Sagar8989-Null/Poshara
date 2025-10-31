@@ -14,7 +14,6 @@ function App() {
     <Router>
       {/* ✅ Navbar will appear on all pages */}
       <Navbar />
-
       <div className="content">
         <Routes>
           <Route path="/" element={<Home />} />
