@@ -41,7 +41,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
         </div>
 
         <div className="filters-container">
-          <div className="filter-card">
+          {/* <div className="filter-card">
             <div className="filter-header">
               <label htmlFor="distance">
                 <Ruler className="icon purple" />
@@ -59,7 +59,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
               onChange={handleInputChange}
               className="range-slider"
             />
-          </div>
+          </div> */}
 
           <div className="filter-card">
             <span className="filter-title">
@@ -221,16 +221,6 @@ export default function NgoDash() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const ngoId = 21; // 🔹 Replace later with logged-in NGO ID
 
-  // // 🔹 Fetch live donations
-  // useEffect(() => {
-  //   fetch("http://localhost:5000/api/donations/available")
-  //     .then((res) => res.json())
-  //     .then((data) => setDonations(data))
-  //     .catch((err) => console.error("Error fetching donations:", err));
-  // }, []);
-
-  // 🔹 Fetch accepted donations
-  // 🔹 Fetch both available + accepted donations
   useEffect(() => {
     const fetchDonations = async () => {
       try {
