@@ -6,7 +6,8 @@ import Signup from "./pages/Signup";
 import RestoDash from "./pages/RestoDash";
 import NgoDash from "./pages/NgoDash";
 import VolDash from "./pages/VolDash";
-import Navbar from './components/Navbar'
+import Navbar from './components/Navbar';
+import Addresslatlong from "./components/Addresslatlong";
 import "./App.css";
 
 function App() {

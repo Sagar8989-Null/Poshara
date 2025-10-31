@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, MapPin, Building2, AlertCircle, CheckCircle } from "lucide-react";
-import "../CSS/Signup.css";
+import Addresslatlong from "../components/Addresslatlong";
+import "../CSS/Auth.css";
 
-const Signup = () => {
+function Signup() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -12,6 +13,7 @@ const Signup = () => {
     latitude: "",
     longitude: ""
   });
+
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +32,6 @@ const Signup = () => {
     setIsLoading(true);
     setMessage("");
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
       setMessage("Passwords do not match");
       setMessageType("error");
@@ -57,7 +58,7 @@ const Signup = () => {
       if (res.ok) {
         setMessage("Account created successfully! ✅");
         setMessageType("success");
-        
+
         setTimeout(() => {
           window.location.href = "/login";
         }, 1500);
@@ -81,6 +82,7 @@ const Signup = () => {
           <h2 className="signup-title">Create Account</h2>
 
           <form onSubmit={handleSubmit} className="signup-form">
+            {/* Name */}
             <div className="input-group">
               <User className="input-icon" />
               <input
@@ -91,10 +93,10 @@ const Signup = () => {
                 onChange={handleChange}
                 className="input-field"
                 required
-                disabled={isLoading}
-              />
+                disabled={isLoading} />
             </div>
 
+            {/* Email */}
             <div className="input-group">
               <Mail className="input-icon" />
               <input
@@ -105,10 +107,10 @@ const Signup = () => {
                 onChange={handleChange}
                 className="input-field"
                 required
-                disabled={isLoading}
-              />
+                disabled={isLoading} />
             </div>
 
+            {/* Password */}
             <div className="input-group">
               <Lock className="input-icon" />
               <input
@@ -119,8 +121,7 @@ const Signup = () => {
                 onChange={handleChange}
                 className="input-field password-field"
                 required
-                disabled={isLoading}
-              />
+                disabled={isLoading} />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -131,6 +132,7 @@ const Signup = () => {
               </button>
             </div>
 
+            {/* Confirm Password */}
             <div className="input-group">
               <Lock className="input-icon" />
               <input
@@ -141,8 +143,7 @@ const Signup = () => {
                 onChange={handleChange}
                 className="input-field password-field"
                 required
-                disabled={isLoading}
-              />
+                disabled={isLoading} />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -153,6 +154,7 @@ const Signup = () => {
               </button>
             </div>
 
+            {/* Role */}
             <div className="input-group">
               <Building2 className="input-icon" />
               <select
@@ -168,37 +170,22 @@ const Signup = () => {
               </select>
             </div>
 
-            <div className="location-group">
-              <div className="input-group">
-                <MapPin className="input-icon" />
-                <input
-                  type="text"
-                  name="latitude"
-                  placeholder="Latitude (optional)"
-                  value={formData.latitude}
-                  onChange={handleChange}
-                  className="input-field"
-                  disabled={isLoading}
-                />
-              </div>
+            {/* Map — show only if NGO or Restaurant */}
+{(formData.role === "ngo" || formData.role === "restaurant") && (
+  <div className="map-wrapper-signup">
+    <p className="map-label">Set your location:</p>
+    <Addresslatlong
+      onLocationChange={(lat, lng) =>
+        setFormData({ ...formData, latitude: lat, longitude: lng })
+      }
+    />
+  </div>
+)}
 
-              <div className="input-group">
-                <MapPin className="input-icon" />
-                <input
-                  type="text"
-                  name="longitude"
-                  placeholder="Longitude (optional)"
-                  value={formData.longitude}
-                  onChange={handleChange}
-                  className="input-field"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
+            {/* Submit */}
             <button
               type="submit"
-              className={`submit-button ${isLoading ? 'loading' : ''}`}
+              className={`submit-button ${isLoading ? "loading" : ""}`}
               disabled={isLoading}
             >
               {isLoading ? (
@@ -212,6 +199,7 @@ const Signup = () => {
             </button>
           </form>
 
+          {/* Message */}
           {message && (
             <div className={`message ${messageType === "success" ? "success" : "error"}`}>
               {messageType === "success" ? (
@@ -223,6 +211,7 @@ const Signup = () => {
             </div>
           )}
 
+          {/* Login Link */}
           <p className="login-link">
             Already have an account?{" "}
             <a href="/login">Sign in</a>
@@ -231,6 +220,6 @@ const Signup = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Signup;
