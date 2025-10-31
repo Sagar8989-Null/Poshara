@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, MapPin, Building2, AlertCircle, CheckCircle } from "lucide-react";
-import Addresslatlong from "../components/Addresslatlong";
+import Addresslatlong from "../components/signupMap";
 import "../CSS/Auth.css";
 
 function Signup() {

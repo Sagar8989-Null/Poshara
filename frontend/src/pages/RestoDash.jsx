@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../CSS/RestoDash.css';
 import OCR from '../components/OCR';
-// import RestoMap from '../components/RestoMap';
+import RestoDashMap from '../components/RestoDashMap';
 
 function RestoDash() {
   const [formData, setFormData] = useState({
@@ -16,6 +16,8 @@ function RestoDash() {
 
   const [donations, setDonations] = useState([]);
   const [uploadedImage, setUploadedImage] = useState('');
+  const [selectedDonationId, setSelectedDonationId] = useState(null);
+
 
   // 🧠 Stats for dashboard
   const stats = {
@@ -283,7 +285,8 @@ function RestoDash() {
               <p className="no-donations">No donations yet. Add your first one!</p>
             ) : (
               donations.map(donation => (
-                <div key={donation.id} className="donation-card">
+                // <div key={donation.id} className="donation-card">
+                <div className="donation-card" onClick={() => setSelectedDonationId(donation.id)}>
                   <img src={donation.image || 'https://via.placeholder.com/100'} alt={donation.name} className="donation-image" />
                   <div className="donation-details">
                     <div className="donation-header">
@@ -301,10 +304,12 @@ function RestoDash() {
             )}
           </div>
         </div>
-      <div>
-        Restaurnat Map is here
-        {/* <RestoMap/> */}
-      </div>
+        {selectedDonationId && (
+          <div className="map-section">
+            <h3>Map for Donation #{selectedDonationId}</h3>
+            <RestoDashMap donationId={selectedDonationId} />
+          </div>
+        )}
       </div>
     </div>
   );

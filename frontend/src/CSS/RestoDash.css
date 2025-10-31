@@ -346,6 +346,15 @@
   transform: scale(1.05);
 }
 
+.resto-dashboard .map-container,
+.resto-dashboard #map {
+  height: 400px;
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .main-content {
