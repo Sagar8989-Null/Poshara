@@ -1,118 +1,323 @@
-import React, { useState } from "react";
-import OCRImageExtractor from "../components/OCR";
+import React, { useState } from 'react';
+import '../CSS/RestoDash.css';
+import OCR from '../components/OCR'
 
 function RestoDash() {
   const [formData, setFormData] = useState({
-    foodname: "",
-    quantity: "",
-    unit: "",
-    expiryDate: "",
-    description: "",
+    foodType: 'Cooked',
+    foodName: '',
+    quantity: '',
+    unit: 'Kilograms (kg)',
+    expiryTime: '',
+    expiryHours: 4, // default 4 hours for unpackaged
+    description: ''
   });
 
-  const [totalDonations, setTotalDonations] = useState("");
-  const [availableDonations, setAvailableDonations] = useState("");
-  const [message, setMessage] = useState("");
+  const [donations, setDonations] = useState([]);
+  const [uploadedImage, setUploadedImage] = useState('');
+
+  const stats = {
+    total: donations.length,
+    available: donations.filter(d => d.status === 'Available').length,
+    claimed: donations.filter(d => d.status === 'Claimed').length,
+    delivered: donations.filter(d => d.status === 'Delivered').length
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleImageClick = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setUploadedImage(event.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const handleOCRExtractedData = (ocrData) => {
+    setFormData(prev => ({
+      ...prev,
+      foodName: ocrData.food_name || prev.foodName,
+      quantity: ocrData.quantity || prev.quantity,
+      unit: ocrData.unit || prev.unit,
+      expiryTime: ocrData.expiry || prev.expiryTime,
+      description: ocrData.description || prev.description
+    }));
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.foodName || !formData.quantity || (!formData.expiryTime && formData.foodType === 'Packaged')) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:5000/donate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      let expiryFinal = '';
+
+      if (formData.foodType === 'Packaged') {
+        expiryFinal = formData.expiryTime;
+      } else {
+        // Add hours to current time for expiry
+        const expiryDate = new Date();
+        expiryDate.setHours(expiryDate.getHours() + parseInt(formData.expiryHours));
+        expiryFinal = expiryDate.toISOString();
+      }
+
+      const donationData = {
+        restaurant_id: 1,
+        food_type: formData.foodName,
+        quantity: parseInt(formData.quantity),
+        unit: formData.unit,
+        expiry_time: expiryFinal,
+        description: formData.description || '',
+        status: 'available'
+      };
+
+      const response = await fetch('http://localhost:5000/api/donations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(donationData)
       });
 
-      const data = await res.json();
-      setMessage(data.message);
+      if (!response.ok) throw new Error('Failed to create donation');
 
-      if (res.ok) {
-        setFormData({
-          foodname: "",
-          quantity: "",
-          unit: "",
-          expiryDate: "",
-          description: "",
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      setMessage("Error submitting form");
+      const result = await response.json();
+
+      const newDonation = {
+        id: result.donation_id || Date.now(),
+        name: formData.foodName,
+        quantity: `${formData.quantity} ${formData.unit}`,
+        image: uploadedImage,
+        status: 'Available',
+        details: formData.description || 'No additional details provided',
+        expiry: new Date(expiryFinal).toLocaleString()
+      };
+
+      setDonations([newDonation, ...donations]);
+
+      setFormData({
+        foodType: 'Cooked',
+        foodName: '',
+        quantity: '',
+        unit: 'Kilograms (kg)',
+        expiryTime: '',
+        expiryHours: 4,
+        description: ''
+      });
+
+      alert('Donation created successfully!');
+
+    } catch (error) {
+      console.error('Error creating donation:', error);
+      alert('Failed to create donation. Please try again.');
     }
   };
 
+  const handleCancel = () => {
+    setFormData({
+      foodType: 'Cooked',
+      foodName: '',
+      quantity: '',
+      unit: 'Kilograms (kg)',
+      expiryTime: '',
+      expiryHours: 4,
+      description: ''
+    });
+  };
+
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Restaurant Dashboard 🍽️</h1>
-      <p>Track your food donations and reduce waste here.</p>
+    <div className="resto-dashboard">
+      {/* Header */}
+      <div className="dashboard-header">
+        <h1>Restaurant Dashboard</h1>
+        <p className="welcome-text">Welcome, Tanvi</p>
+      </div>
 
-      <div>Total Donations: {totalDonations}</div>
-      <div>Available: {availableDonations}</div>
+      {/* Stats Cards */}
+      <div className="stats-container">
+        <div className="stat-card">
+          <div className="stat-label">Total Donations</div>
+          <div className="stat-value total">{stats.total}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Available</div>
+          <div className="stat-value available">{stats.available}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Claimed</div>
+          <div className="stat-value claimed">{stats.claimed}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Delivered</div>
+          <div className="stat-value delivered">{stats.delivered}</div>
+        </div>
+      </div>
 
-      <OCRImageExtractor />
+      {/* Main Content */}
+      <div className="main-content">
+        {/* Left Sidebar - Form */}
+        <div className="form-sidebar">
+          <h2>Add Food Donation</h2>
+          <p className="form-subtitle">Share surplus food with your community</p>
 
-      <form onSubmit={handleSubmit}>
+          {/* Food Type Selector */}
+          <div className="form-group">
+            <label>Food Type</label>
+            <select name="foodType" value={formData.foodType} onChange={handleChange} className="form-select">
+              <option value="Cooked">Cooked Food</option>
+              <option value="Packaged">Packaged Food</option>
+            </select>
+          </div>
 
-        <label>Food Name:</label>
-        <input
-          type="text"
-          name="foodname"
-          value={formData.foodname}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          {/* Conditionally show OCR if Packaged */}
+          {formData.foodType === 'Packaged' && (
+            <div className="ocr-section">
+              <OCR onExtractedData={handleOCRExtractedData} />
+            </div>
+          )}
 
-        <label>Quantity:</label>
-        <input
-          type="number"
-          name="quantity"
-          value={formData.quantity}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          {/* Form Fields */}
+          <div className="form-group">
+            <label>
+              Food Name <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              name="foodName"
+              value={formData.foodName}
+              onChange={handleChange}
+              placeholder="e.g., Cooked Rice, Vegetables"
+              className="form-input"
+            />
+          </div>
 
-        <label>Unit:</label>
-        <input
-          type="number"
-          name="unit"
-          value={formData.unit}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <div className="form-row">
+            <div className="form-group">
+              <label>
+                Quantity <span className="required">*</span>
+              </label>
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                placeholder="10"
+                min="0"
+                className="form-input"
+              />
+            </div>
+            <div className="form-group">
+              <label>Unit</label>
+              <select name="unit" value={formData.unit} onChange={handleChange} className="form-select">
+                <option>Kilograms (kg)</option>
+                <option>Grams (g)</option>
+                <option>Liters (L)</option>
+                <option>Pieces</option>
+                <option>Plates</option>
+              </select>
+            </div>
+          </div>
 
-        <label>Expiry Date:</label>
-        <input
-          type="month"
-          name="expiryDate"
-          value={formData.expiryDate}
-          onChange={handleChange}
-        />
-        <br /><br />
+          {/* Conditional Expiry Field */}
+          <div className="form-group">
+            {formData.foodType === 'Packaged' ? (
+              <>
+                <label>
+                  Expiry Date <span className="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="expiryTime"
+                  value={formData.expiryTime}
+                  onChange={handleChange}
+                  className="form-input"
+                />
+              </>
+            ) : (
+              <>
+                <label>
+                  Expiry Time (Hours) <span className="required">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="expiryHours"
+                  value={formData.expiryHours}
+                  onChange={handleChange}
+                  min="1"
+                  max="48"
+                  className="form-input"
+                />
+                <p className="hint">Default is 4 hours. You can increase it if needed.</p>
+              </>
+            )}
+          </div>
 
-        <label>Description:</label>
-        <input
-          type="text"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+          <div className="form-group">
+            <label>Description</label>
+            <textarea
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              placeholder="Additional details about the food..."
+              rows="4"
+              className="form-textarea"
+            />
+          </div>
 
-        <button type="submit">Submit</button>
-      </form>
+          <div className="form-actions">
+            <button className="submit-button" onClick={handleSubmit}>
+              Create Donation
+            </button>
+            <button className="cancel-button" onClick={handleCancel}>
+              Cancel
+            </button>
+          </div>
+        </div>
 
-      {message && <p>{message}</p>}
+        {/* Right Side - Donations List */}
+        <div className="donations-section">
+          <h2>Your Donations</h2>
+
+          <div className="donations-list">
+            {donations.length === 0 ? (
+              <p className="no-donations">No donations yet. Add your first one!</p>
+            ) : (
+              donations.map(donation => (
+                <div key={donation.id} className="donation-card">
+                  <img
+                    src={donation.image || 'https://via.placeholder.com/100'}
+                    alt={donation.name}
+                    className="donation-image"
+                  />
+                  <div className="donation-details">
+                    <div className="donation-header">
+                      <h3>{donation.name}</h3>
+                      <span className={`status-badge ${donation.status.toLowerCase()}`}>
+                        {donation.status}
+                      </span>
+                    </div>
+                    <p className="donation-quantity">{donation.quantity}</p>
+                    <p className="donation-info">{donation.details}</p>
+                    <p className="donation-expiry">Expires: {donation.expiry}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
-};
+}
 
 export default RestoDash;
-

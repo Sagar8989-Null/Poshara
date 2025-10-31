@@ -1,10 +1,12 @@
 import React from "react";
 import "../CSS/Home.css";
 import Slider from "../components/slider";
+import Navbar from "../components/Navbar"
 
 function Home() {
   return (
     <>
+     <Navbar/>
       <div className="home-page">
         {/* Floating Background Shapes */}
         <div className="background-shapes">

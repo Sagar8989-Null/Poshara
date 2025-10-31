@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import '../CSS/OCR.css';
 import Cropper from 'react-easy-crop';
 
-const OCRImageExtractor = () => {
+const OCR = ({ onExtractedData }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [extractedText, setExtractedText] = useState('');
@@ -57,15 +57,19 @@ const OCRImageExtractor = () => {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to process image');
-      }
+      if (!response.ok) throw new Error('Failed to process image');
 
       const data = await response.json();
       setExtractedText(data.extracted_text || 'No text found in image');
       setLlmOutput(data.llm_output || null);
+
+      // 🔹 Send data back to RestoDash
+      if (onExtractedData && data.llm_output) {
+        onExtractedData(data.llm_output);
+      }
+
     } catch (err) {
-      setError('Error: ' + err.message + '. Make sure the Flask server is running on port 5000.');
+      setError('Error: ' + err.message + '. Make sure Flask server is running.');
     } finally {
       setLoading(false);
     }
@@ -317,4 +321,4 @@ const OCRImageExtractor = () => {
   );
 };
 
-export default OCRImageExtractor;
+export default OCR;

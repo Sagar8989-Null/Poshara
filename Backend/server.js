@@ -28,22 +28,18 @@ try {
   console.error("❌ Database connection failed:", err);
 }
 
-
-// Signup route
+// ✅ SIGNUP
 app.post("/api/auth/signup", async (req, res) => {
   const { name, email, password, role, latitude, longitude } = req.body;
 
-  if (!name || !email || !password || !role) {
+  if (!name || !email || !password || !role)
     return res.status(400).json({ message: "All fields required" });
-  }
 
-  if ((role === "restaurant" || role === "ngo") && (!latitude || !longitude)) {
+  if ((role === "restaurant" || role === "ngo") && (!latitude || !longitude))
     return res.status(400).json({ message: "Please set your location on the map" });
-  }
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const [result] = await db.query(
       "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
       [name, email, hashedPassword, role]
@@ -66,10 +62,7 @@ app.post("/api/auth/signup", async (req, res) => {
     }
 
     if (role === "volunteer") {
-      await db.query(
-        "INSERT INTO volunteers (volunteer_id) VALUES (?)",
-        [userId]
-      );
+      await db.query("INSERT INTO volunteers (volunteer_id) VALUES (?)", [userId]);
     }
 
     res.status(201).json({ message: "User registered successfully" });
@@ -79,8 +72,7 @@ app.post("/api/auth/signup", async (req, res) => {
   }
 });
 
-
-// ✅ Login route
+// ✅ LOGIN
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -88,7 +80,6 @@ app.post("/api/auth/login", async (req, res) => {
     return res.status(400).json({ message: "All fields required" });
 
   try {
-    // find user by email
     const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
 
     if (rows.length === 0)
@@ -100,11 +91,13 @@ app.post("/api/auth/login", async (req, res) => {
     if (!validPassword)
       return res.status(401).json({ message: "Invalid email or password" });
 
-    // get coordinates depending on role
     let locationQuery = "";
-    if (user.role === "restaurant") locationQuery = "SELECT latitude, longitude FROM restaurants WHERE restaurant_id = ?";
-    if (user.role === "ngo") locationQuery = "SELECT latitude, longitude FROM ngos WHERE ngo_id = ?";
-    if (user.role === "volunteer") locationQuery = "SELECT NULL AS latitude, NULL AS longitude";
+    if (user.role === "restaurant")
+      locationQuery = "SELECT latitude, longitude FROM restaurants WHERE restaurant_id = ?";
+    else if (user.role === "ngo")
+      locationQuery = "SELECT latitude, longitude FROM ngos WHERE ngo_id = ?";
+    else
+      locationQuery = "SELECT NULL AS latitude, NULL AS longitude";
 
     const [loc] = await db.query(locationQuery, [user.user_id]);
     const coords = loc[0] || { latitude: null, longitude: null };
@@ -116,8 +109,8 @@ app.post("/api/auth/login", async (req, res) => {
         name: user.name,
         role: user.role,
         latitude: coords.latitude,
-        longitude: coords.longitude
-      }
+        longitude: coords.longitude,
+      },
     });
   } catch (err) {
     console.error("Login Error:", err);
@@ -125,7 +118,7 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
-// Leaderboard route
+// ✅ LEADERBOARD
 app.get("/api/leaderboard", async (req, res) => {
   const sql = `
     SELECT u.name, u.role,
@@ -138,14 +131,97 @@ app.get("/api/leaderboard", async (req, res) => {
     LEFT JOIN volunteers v ON u.user_id = v.volunteer_id
     ORDER BY (COALESCE(r.total_donations,0) + COALESCE(v.total_transports,0) + COALESCE(n.total_received,0)) DESC;
   `;
+
   try {
-    const [results] = await db.promise().query(sql);
+    const [results] = await db.query(sql);
     res.json(results);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 
-// Start server
+// ✅ CREATE DONATION
+app.post("/api/donations", async (req, res) => {
+  try {
+    let { restaurant_id, food_type, quantity, unit, expiry_time, description, status } = req.body;
+
+    if (!restaurant_id || !food_type || !quantity || !unit || !expiry_time)
+      return res.status(400).json({ error: "Missing required fields" });
+
+     if (!expiry_time && food_type === "unpackaged") {
+      const expiry = new Date();
+      expiry.setHours(expiry.getHours() + 4);
+      expiry_time = expiry.toISOString().slice(0, 19).replace("T", " ");
+    }
+
+    // ✅ Convert to MySQL datetime format
+    if (expiry_time) {
+      expiry_time = new Date(expiry_time).toISOString().slice(0, 19).replace("T", " ");
+    }
+
+    const query = `
+      INSERT INTO donations 
+      (restaurant_id, food_type, quantity, unit, expiry_time, description, status) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    const [result] = await db.query(query, [
+      restaurant_id,
+      food_type,
+      quantity,
+      unit,
+      expiry_time,
+      description || "",
+      status || "available",
+    ]);
+
+    res.status(201).json({
+      message: "Donation created successfully",
+      donation_id: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating donation:", error);
+    res.status(500).json({ error: "Failed to create donation" });
+  }
+});
+
+// ✅ GET DONATIONS BY RESTAURANT
+app.get("/api/donations", async (req, res) => {
+  try {
+    const { restaurant_id } = req.query;
+
+    if (!restaurant_id)
+      return res.status(400).json({ error: "restaurant_id is required" });
+
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE restaurant_id = ? ORDER BY created_at DESC",
+      [restaurant_id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching donations:", error);
+    res.status(500).json({ error: "Failed to fetch donations" });
+  }
+});
+
+// ✅ DELETE DONATION
+app.delete("/api/donations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [result] = await db.query("DELETE FROM donations WHERE donation_id = ?", [id]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Donation not found" });
+
+    res.json({ message: "Donation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting donation:", error);
+    res.status(500).json({ error: "Failed to delete donation" });
+  }
+});
+
+// ✅ START SERVER
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
