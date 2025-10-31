@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../CSS/VolDash.css";
 import { CheckCircle, MapPin, Truck, Clock, Upload } from "lucide-react";
-import Addresslatlong from "../components/Addresslatlong";
+import signupMap from "../components/signupMap";
 
 function VolDash() {
   const [donations, setDonations] = useState([]);
@@ -202,7 +202,7 @@ function VolDash() {
         <div className="map-panel">
           <h2>Live Map</h2>
           {selectedDonation ? (
-            <Addresslatlong
+            <signupMap
               initialLocation={mapLocation}
               onLocationChange={(lat, lng) =>
                 setMapLocation({ lat, lng })
