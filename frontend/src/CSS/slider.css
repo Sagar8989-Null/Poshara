@@ -37,8 +37,8 @@ body {
   height: var(--height);
   position: absolute;
   left: 100%;
-  animation: autoRun 25s linear infinite;
-  animation-delay: calc((25s / var(--quantity)) * (var(--position) - 1) - 25s) !important;
+  animation: autoRun 60s linear infinite;
+  animation-delay: calc((60s / var(--quantity)) * (var(--position) - 1) - 60s) !important;
   transition: all 0.4s ease;
   cursor: pointer;
 
@@ -83,8 +83,8 @@ body {
 
 /* 🌼 Reverse direction animation */
 .slider[reverse="true"] .item {
-  animation: reversePlay 25s linear infinite;
-  animation-delay: calc((25s / var(--quantity)) * (var(--position) - 1) - 25s) !important;
+  animation: reversePlay 60s linear infinite;
+  animation-delay: calc((60s / var(--quantity)) * (var(--position) - 1) - 60s) !important;
 }
 
 @keyframes reversePlay {
