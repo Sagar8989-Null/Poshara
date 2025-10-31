@@ -1,7 +1,7 @@
 import React from "react";
 import "../CSS/Home.css";
 import Slider from "../components/slider";
-import Navbar from "../components/Navbar"
+import Navbar from "../components/Navbar";
 
 function Home() {
   return (

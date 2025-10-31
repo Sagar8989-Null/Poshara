@@ -264,16 +264,6 @@ color: #fff; /* make text visible */
   opacity: 0.6;
   cursor: not-allowed;
 }
-/*optional*/
-
-.submit-button:hover:not(:disabled) {
-  animation: pulseGlow 1.6s infinite alternate ease-in-out;
-}
-
-@keyframes pulseGlow {
-  from { box-shadow: 0 0 12px rgba(76, 175, 80, 0.4); }
-  to { box-shadow: 0 0 20px rgba(76, 175, 80, 0.6); }
-}
 
 /* Spinner */
 .spinner {
