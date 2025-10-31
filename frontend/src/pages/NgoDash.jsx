@@ -223,11 +223,11 @@ export default function NgoDash() {
 
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const ngoId = 1; // 🔹 Replace later with logged-in NGO ID
+  const ngoId = 21; // 🔹 Replace later with logged-in NGO ID
 
   // 🔹 Fetch live donations
   useEffect(() => {
-    fetch("http://localhost:5000/api/donations/available")
+    fetch("http://localhost:5000/api/donations/picked")
       .then((res) => res.json())
       .then((data) => setDonations(data))
       .catch((err) => console.error("Error fetching donations:", err));
