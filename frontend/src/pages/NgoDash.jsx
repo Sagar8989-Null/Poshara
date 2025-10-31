@@ -41,7 +41,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
         </div>
 
         <div className="filters-container">
-          <div className="filter-card">
+          {/* <div className="filter-card">
             <div className="filter-header">
               <label htmlFor="distance">
                 <Ruler className="icon purple" />
@@ -59,7 +59,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
               onChange={handleInputChange}
               className="range-slider"
             />
-          </div>
+          </div> */}
 
           <div className="filter-card">
             <span className="filter-title">
@@ -69,17 +69,15 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             <div className="toggle-group">
               <button
                 onClick={() => handleButtonToggle("foodType", "Veg")}
-                className={`toggle-btn ${
-                  foodType === "Veg" ? "active" : ""
-                }`}
+                className={`toggle-btn ${foodType === "Veg" ? "active" : ""
+                  }`}
               >
                 Veg
               </button>
               <button
                 onClick={() => handleButtonToggle("foodType", "Non-Veg")}
-                className={`toggle-btn ${
-                  foodType === "Non-Veg" ? "active" : ""
-                }`}
+                className={`toggle-btn ${foodType === "Non-Veg" ? "active" : ""
+                  }`}
               >
                 Non-Veg
               </button>
@@ -94,17 +92,15 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             <div className="toggle-group">
               <button
                 onClick={() => handleButtonToggle("packaging", "Unpackaged")}
-                className={`toggle-btn ${
-                  packaging === "Unpackaged" ? "active" : ""
-                }`}
+                className={`toggle-btn ${packaging === "Unpackaged" ? "active" : ""
+                  }`}
               >
                 Unpackaged
               </button>
               <button
                 onClick={() => handleButtonToggle("packaging", "Packaged")}
-                className={`toggle-btn ${
-                  packaging === "Packaged" ? "active" : ""
-                }`}
+                className={`toggle-btn ${packaging === "Packaged" ? "active" : ""
+                  }`}
               >
                 Packaged
               </button>
@@ -223,15 +219,34 @@ export default function NgoDash() {
 
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const ngoId = 1; // 🔹 Replace later with logged-in NGO ID
+  const ngoId = 21; // 🔹 Replace later with logged-in NGO ID
 
-  // 🔹 Fetch live donations
   useEffect(() => {
-    fetch("http://localhost:5000/api/donations/available")
-      .then((res) => res.json())
-      .then((data) => setDonations(data))
-      .catch((err) => console.error("Error fetching donations:", err));
+    const fetchDonations = async () => {
+      try {
+        const [availableRes, acceptedRes] = await Promise.all([
+          fetch("http://localhost:5000/api/donations/available"),
+          fetch("http://localhost:5000/api/donations/accepted"),
+        ]);
+
+        const availableData = await availableRes.json();
+        const acceptedData = await acceptedRes.json();
+
+        // 🧩 Merge both
+        const merged = [...availableData, ...acceptedData];
+        setDonations(merged);
+      } catch (err) {
+        console.error("Error fetching donations:", err);
+      }
+    };
+
+    fetchDonations();
+
+     const interval = setInterval(fetchDonations, 3000);
+  return () => clearInterval(interval);
   }, []);
+
+
 
   // 🔹 Accept a donation
   const handleAccept = async (donationId) => {
@@ -249,7 +264,11 @@ export default function NgoDash() {
 
       alert("Donation accepted successfully!");
       setDonations((prev) =>
-        prev.filter((donation) => donation.donation_id !== donationId)
+        prev.map((donation) =>
+          donation.donation_id === donationId
+            ? { ...donation, status: "accepted", ngo_id: ngoId }
+            : donation
+        )
       );
     } catch (err) {
       console.error(err);
