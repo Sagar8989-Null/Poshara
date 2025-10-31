@@ -1,16 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import '../CSS/NgoDash.css';
-import { Menu, Ruler, Leaf, Box, Users, X } from 'lucide-react';
-
-// --- Mock Data for Donations ---
-const allDonations = [
-  { id: 1, name: 'Sujata Hotel', status: 'Accepted', distance: 5, type: 'Veg', packaging: 'Packaged', servings: 50 },
-  { id: 2, name: 'Durga Hotel', status: 'Waiting', distance: 10, type: 'Non-Veg', packaging: 'Packaged', servings: 20 },
-  { id: 3, name: 'Modern Cafe', status: 'Waiting', distance: 3, type: 'Veg', packaging: 'Unpackaged', servings: 15 },
-  { id: 4, name: 'Green Leaf', status: 'Accepted', distance: 45, type: 'Veg', packaging: 'Packaged', servings: 100 },
-  { id: 5, name: 'BBQ Nation', status: 'Waiting', distance: 22, type: 'Non-Veg', packaging: 'Unpackaged', servings: 75 },
-  { id: 6, name: 'Anna Idli', status: 'Waiting', distance: 8, type: 'Veg', packaging: 'Unpackaged', servings: 30 },
-];
+import React, { useState, useEffect } from "react";
+import "../CSS/NgoDash.css";
+import { Menu, Ruler, Leaf, Box, Users, X } from "lucide-react";
 
 // --- Sidebar Component ---
 function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
@@ -25,37 +15,32 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Close sidebar on ESC key
   useEffect(() => {
     const handleEsc = (e) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key === "Escape") onClose();
     };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
   }, [onClose]);
 
-  // Prevent scroll when sidebar open (for mobile)
   useEffect(() => {
-    if (isOpen) document.body.classList.add('sidebar-open');
-    else document.body.classList.remove('sidebar-open');
+    if (isOpen) document.body.classList.add("sidebar-open");
+    else document.body.classList.remove("sidebar-open");
   }, [isOpen]);
 
   return (
     <>
-      {/* Overlay for mobile only */}
       {isOpen && <div className="overlay md:hidden" onClick={onClose}></div>}
 
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <h2>Filters</h2>
-          {/* Mobile close button */}
           <button onClick={onClose} className="close-btn md:hidden">
             <X className="w-6 h-6" />
           </button>
         </div>
 
         <div className="filters-container">
-          {/* Distance Filter */}
           <div className="filter-card">
             <div className="filter-header">
               <label htmlFor="distance">
@@ -76,7 +61,6 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             />
           </div>
 
-          {/* Food Type Filter */}
           <div className="filter-card">
             <span className="filter-title">
               <Leaf className="icon green" />
@@ -84,21 +68,24 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             </span>
             <div className="toggle-group">
               <button
-                onClick={() => handleButtonToggle('foodType', 'Veg')}
-                className={`toggle-btn ${foodType === 'Veg' ? 'active' : ''}`}
+                onClick={() => handleButtonToggle("foodType", "Veg")}
+                className={`toggle-btn ${
+                  foodType === "Veg" ? "active" : ""
+                }`}
               >
                 Veg
               </button>
               <button
-                onClick={() => handleButtonToggle('foodType', 'Non-Veg')}
-                className={`toggle-btn ${foodType === 'Non-Veg' ? 'active' : ''}`}
+                onClick={() => handleButtonToggle("foodType", "Non-Veg")}
+                className={`toggle-btn ${
+                  foodType === "Non-Veg" ? "active" : ""
+                }`}
               >
                 Non-Veg
               </button>
             </div>
           </div>
 
-          {/* Packaging Filter */}
           <div className="filter-card">
             <span className="filter-title">
               <Box className="icon blue" />
@@ -106,21 +93,24 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             </span>
             <div className="toggle-group">
               <button
-                onClick={() => handleButtonToggle('packaging', 'Unpackaged')}
-                className={`toggle-btn ${packaging === 'Unpackaged' ? 'active' : ''}`}
+                onClick={() => handleButtonToggle("packaging", "Unpackaged")}
+                className={`toggle-btn ${
+                  packaging === "Unpackaged" ? "active" : ""
+                }`}
               >
                 Unpackaged
               </button>
               <button
-                onClick={() => handleButtonToggle('packaging', 'Packaged')}
-                className={`toggle-btn ${packaging === 'Packaged' ? 'active' : ''}`}
+                onClick={() => handleButtonToggle("packaging", "Packaged")}
+                className={`toggle-btn ${
+                  packaging === "Packaged" ? "active" : ""
+                }`}
               >
                 Packaged
               </button>
             </div>
           </div>
 
-          {/* Servings Filter */}
           <div className="filter-card">
             <label htmlFor="servings" className="filter-title">
               <Users className="icon yellow" />
@@ -138,7 +128,6 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
             />
           </div>
 
-          {/* Apply Filters Button - moved just below Minimum Servings */}
           <div className="apply-btn-container">
             <button onClick={applyFilters} className="apply-btn">
               Apply Filters
@@ -151,23 +140,36 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
 }
 
 // --- Donation Item ---
-function DonationItem({ donation }) {
-  const { name, status, distance } = donation;
-  const statusClass = status === 'Accepted' ? 'accepted' : 'waiting';
+function DonationItem({ donation, onAccept }) {
+  const statusClass =
+    donation.status === "picked_up" ? "accepted" : "waiting";
 
   return (
     <div className="donation-item">
       <div>
-        <h3>{name}</h3>
-        <p>{distance} km away</p>
+        <h3>{donation.food_type}</h3>
+        <p>
+          Quantity: {donation.quantity} {donation.unit}
+        </p>
+        <p>Expires: {new Date(donation.expiry_time).toLocaleString()}</p>
       </div>
-      <span className={`status ${statusClass}`}>{status}</span>
+      <div className="donation-actions">
+        <span className={`status ${statusClass}`}>{donation.status}</span>
+        {donation.status === "available" && (
+          <button
+            className="accept-btn"
+            onClick={() => onAccept(donation.donation_id)}
+          >
+            Accept
+          </button>
+        )}
+      </div>
     </div>
   );
 }
 
 // --- Main Content ---
-function MainContent({ donations, onMenuClick }) {
+function MainContent({ donations, onMenuClick, onAccept }) {
   return (
     <main className="main-content">
       <div className="header">
@@ -175,17 +177,20 @@ function MainContent({ donations, onMenuClick }) {
         <h2 id="ngo-dash">NGO Dashboard</h2>
       </div>
 
-      {/* Requested Donations placed right below Dashboard */}
-      <h3 className="section-title">Requested Donations</h3>
+      <h3 className="section-title">Available Donations</h3>
 
       <section className="donations-section">
         <div className="donations-list">
           {donations.length > 0 ? (
             donations.map((donation) => (
-              <DonationItem key={donation.id} donation={donation} />
+              <DonationItem
+                key={donation.donation_id}
+                donation={donation}
+                onAccept={onAccept}
+              />
             ))
           ) : (
-            <p className="empty-text">No donations match your filters.</p>
+            <p className="empty-text">No donations available right now.</p>
           )}
         </div>
       </section>
@@ -211,24 +216,49 @@ function Footer() {
 export default function NgoDash() {
   const [filters, setFilters] = useState({
     distance: 25,
-    foodType: 'Veg',
-    packaging: 'Unpackaged',
+    foodType: "Veg",
+    packaging: "Unpackaged",
     servings: 10,
   });
 
-  const [filteredDonations, setFilteredDonations] = useState(allDonations);
+  const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const ngoId = 1; // 🔹 Replace later with logged-in NGO ID
+
+  // 🔹 Fetch live donations
+  useEffect(() => {
+    fetch("http://localhost:5000/api/donations/available")
+      .then((res) => res.json())
+      .then((data) => setDonations(data))
+      .catch((err) => console.error("Error fetching donations:", err));
+  }, []);
+
+  // 🔹 Accept a donation
+  const handleAccept = async (donationId) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/donations/${donationId}/accept`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ngo_id: ngoId }),
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to accept donation");
+
+      alert("Donation accepted successfully!");
+      setDonations((prev) =>
+        prev.filter((donation) => donation.donation_id !== donationId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Error accepting donation");
+    }
+  };
 
   const applyFilters = () => {
-    const newFilteredList = allDonations.filter((donation) => {
-      return (
-        donation.distance <= filters.distance &&
-        donation.type === filters.foodType &&
-        donation.packaging === filters.packaging &&
-        donation.servings >= filters.servings
-      );
-    });
-    setFilteredDonations(newFilteredList);
+    // currently static — you can later filter donations based on filters
     if (window.innerWidth < 768) setIsSidebarOpen(false);
   };
 
@@ -243,8 +273,9 @@ export default function NgoDash() {
           onClose={() => setIsSidebarOpen(false)}
         />
         <MainContent
-          donations={filteredDonations}
+          donations={donations}
           onMenuClick={() => setIsSidebarOpen(true)}
+          onAccept={handleAccept}
         />
       </div>
       <Footer />

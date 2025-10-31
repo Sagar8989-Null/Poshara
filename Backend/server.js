@@ -221,6 +221,165 @@ app.delete("/api/donations/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete donation" });
   }
 });
+// ✅ GET ALL AVAILABLE DONATIONS (for NGO Dashboard)
+app.get("/api/donations/available", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE status = 'available' ORDER BY created_at DESC"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching available donations:", error);
+    res.status(500).json({ error: "Failed to fetch available donations" });
+  }
+});
+
+// ✅ NGO ACCEPTS DONATION (assign ngo_id + update status)
+app.put("/api/donations/:id/accept", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ngo_id } = req.body;
+
+    if (!ngo_id) return res.status(400).json({ error: "ngo_id is required" });
+
+    await db.query(
+      "UPDATE donations SET ngo_id = ?, status = 'picked_up' WHERE donation_id = ?",
+      [ngo_id, id]
+    );
+
+    res.json({ message: "Donation accepted by NGO" });
+  } catch (error) {
+    console.error("Error accepting donation:", error);
+    res.status(500).json({ error: "Failed to accept donation" });
+  }
+});
+
+// ✅ GET NGO’S ASSIGNED DONATIONS
+app.get("/api/donations/ngo/:ngo_id", async (req, res) => {
+  try {
+    const { ngo_id } = req.params;
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE ngo_id = ? ORDER BY created_at DESC",
+      [ngo_id]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching NGO donations:", error);
+    res.status(500).json({ error: "Failed to fetch NGO donations" });
+  }
+});
+
+// ✅ VOLUNTEER PICKS UP DONATION
+app.put("/api/donations/:id/pickup", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { volunteer_id } = req.body;
+
+    if (!volunteer_id)
+      return res.status(400).json({ error: "volunteer_id is required" });
+
+    await db.query(
+      "UPDATE donations SET volunteer_id = ?, status = 'picked_up' WHERE donation_id = ?",
+      [volunteer_id, id]
+    );
+
+    res.json({ message: "Donation picked up by volunteer" });
+  } catch (error) {
+    console.error("Error updating pickup:", error);
+    res.status(500).json({ error: "Failed to update pickup" });
+  }
+});
+
+// ✅ VOLUNTEER DELIVERS DONATION
+app.put("/api/donations/:id/deliver", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { volunteer_id } = req.body;
+
+    if (!volunteer_id)
+      return res.status(400).json({ error: "volunteer_id is required" });
+
+    await db.query(
+      "UPDATE donations SET status = 'delivered' WHERE donation_id = ? AND volunteer_id = ?",
+      [id, volunteer_id]
+    );
+
+    res.json({ message: "Donation marked as delivered" });
+  } catch (error) {
+    console.error("Error delivering donation:", error);
+    res.status(500).json({ error: "Failed to deliver donation" });
+  }
+});
+
+// ✅ GET VOLUNTEER’S ASSIGNED DONATIONS
+app.get("/api/donations/volunteer/:volunteer_id", async (req, res) => {
+  try {
+    const { volunteer_id } = req.params;
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE volunteer_id = ? ORDER BY created_at DESC",
+      [volunteer_id]
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching volunteer donations:", error);
+    res.status(500).json({ error: "Failed to fetch volunteer donations" });
+  }
+});
+
+// ✅ Fetch all donations accepted by NGOs (for volunteers)
+app.get("/api/donations/picked", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE status = 'picked_up'"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching picked donations:", error);
+    res.status(500).json({ error: "Failed to fetch picked donations" });
+  }
+});
+
+// ✅ Volunteer accepts (picks up) donation
+app.put("/api/donations/:id/pick", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { volunteer_id } = req.body;
+
+    const [result] = await db.query(
+      "UPDATE donations SET status = 'in_transit', volunteer_id = ? WHERE donation_id = ?",
+      [volunteer_id, id]
+    );
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Donation not found" });
+
+    res.json({ message: "Donation picked up by volunteer" });
+  } catch (error) {
+    console.error("Error picking up donation:", error);
+    res.status(500).json({ error: "Failed to pick donation" });
+  }
+});
+
+// ✅ Volunteer marks donation as delivered
+app.put("/api/donations/:id/deliver", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [result] = await db.query(
+      "UPDATE donations SET status = 'delivered' WHERE donation_id = ?",
+      [id]
+    );
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Donation not found" });
+
+    res.json({ message: "Donation marked as delivered" });
+  } catch (error) {
+    console.error("Error delivering donation:", error);
+    res.status(500).json({ error: "Failed to deliver donation" });
+  }
+});
+
 
 // ✅ START SERVER
 const PORT = process.env.PORT || 5000;
