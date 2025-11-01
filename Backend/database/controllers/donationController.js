@@ -112,5 +112,40 @@ app.get("/api/donations/:id/details", async (req, res) => {
   }
 });
 
+
+/* ===========================================================
+   🚗 VOLUNTEER ROUTES
+=========================================================== */
+
+// ✅ Get all donations accepted by NGOs (ready for pickup)
+app.get("/api/volunteer/accepted", async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        d.donation_id,
+        d.food_type,
+        d.quantity,
+        d.unit,
+        d.status,
+        d.description,
+        r.name AS restaurant_name,
+        r.latitude AS restaurant_lat,
+        r.longitude AS restaurant_lng,
+        n.organization_name AS ngo_name,
+        n.latitude AS ngo_lat,
+        n.longitude AS ngo_lng
+      FROM donations d
+      LEFT JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+      LEFT JOIN ngos n ON d.ngo_id = n.ngo_id
+      WHERE d.status = 'accepted'
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching accepted donations:", error);
+    res.status(500).json({ error: "Failed to fetch accepted donations" });
+  }
+});
+
 // ✅ Accept, Pickup, Deliver, etc...
 // (Reuse your existing functions here for each status update)

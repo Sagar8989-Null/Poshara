@@ -339,9 +339,6 @@ app.get("/api/donations/ngo/:ngo_id", async (req, res) => {
   }
 });
 
-/* ===========================================================
-   🚗 VOLUNTEER ROUTES
-=========================================================== */
 
 // ✅ Get all donations accepted by NGOs (ready for pickup)
 app.get("/api/volunteer/accepted", async (req, res) => {
