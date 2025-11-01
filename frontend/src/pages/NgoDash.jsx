@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../CSS/NgoDash.css";
 import { Menu, Ruler, Leaf, Box, Users, X } from "lucide-react";
+import NgoDashMap from "../components/NgoDashMap";
 
 // --- Sidebar Component ---
 function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
@@ -136,12 +137,12 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
 }
 
 // --- Donation Item ---
-function DonationItem({ donation, onAccept }) {
+function DonationItem({ donation, onAccept, onSelect }) {
   const statusClass =
-    donation.status === "picked_up" ? "accepted" : "waiting";
+    donation.status === "picked_up" || donation.status === "accepted" ? "accepted" : "waiting";
 
   return (
-    <div className="donation-item">
+    <div className="donation-item" onClick={() => onSelect && onSelect(donation.donation_id)}>
       <div>
         <h3>{donation.food_type}</h3>
         <p>
@@ -154,7 +155,10 @@ function DonationItem({ donation, onAccept }) {
         {donation.status === "available" && (
           <button
             className="accept-btn"
-            onClick={() => onAccept(donation.donation_id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAccept(donation.donation_id);
+            }}
           >
             Accept
           </button>
@@ -165,7 +169,7 @@ function DonationItem({ donation, onAccept }) {
 }
 
 // --- Main Content ---
-function MainContent({ donations, onMenuClick, onAccept, user }) {
+function MainContent({ donations, onMenuClick, onAccept, user, selectedDonationId, onSelectDonation }) {
   return (
     <main className="main-content">
       <div className="header">
@@ -196,6 +200,7 @@ function MainContent({ donations, onMenuClick, onAccept, user }) {
                 key={donation.donation_id}
                 donation={donation}
                 onAccept={onAccept}
+                onSelect={onSelectDonation}
               />
             ))
           ) : (
@@ -206,9 +211,13 @@ function MainContent({ donations, onMenuClick, onAccept, user }) {
 
       <section className="map-section">
         <h3>Map View</h3>
-        <div className="map-placeholder">
-          <span>Map View Placeholder</span>
-        </div>
+        {selectedDonationId ? (
+          <NgoDashMap donationId={selectedDonationId} />
+        ) : (
+          <div className="map-placeholder">
+            <span>Click on a donation to view it on the map</span>
+          </div>
+        )}
       </section>
     </main>
   );
@@ -233,6 +242,7 @@ export default function NgoDash() {
 
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedDonationId, setSelectedDonationId] = useState(null);
 
   // Load user data from localStorage
   useEffect(() => {
@@ -302,6 +312,20 @@ export default function NgoDash() {
             : donation
         )
       );
+      
+      // Select the accepted donation to show on map
+      setSelectedDonationId(donationId);
+      
+      // Emit socket event for real-time update
+      if (window.socket) {
+        window.socket.emit("donation-accepted", {
+          donationId,
+          ngoLocation: user && user.latitude && user.longitude ? {
+            lat: user.latitude,
+            lng: user.longitude
+          } : null
+        });
+      }
     } catch (err) {
       console.error(err);
       alert("Error accepting donation");
@@ -328,6 +352,8 @@ export default function NgoDash() {
           onMenuClick={() => setIsSidebarOpen(true)}
           onAccept={handleAccept}
           user={user}
+          selectedDonationId={selectedDonationId}
+          onSelectDonation={setSelectedDonationId}
         />
       </div>
       <Footer />

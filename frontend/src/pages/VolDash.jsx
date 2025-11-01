@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../CSS/VolDash.css";
 import { CheckCircle, MapPin, Truck, Clock, Upload } from "lucide-react";
-import signupMap from "../components/signupMap";
+import VolunteerDashMap from "../components/VolunteerDashMap";
 
 function VolDash() {
   const [user, setUser] = useState(null);
@@ -95,6 +95,9 @@ function VolDash() {
       lng: donation.longitude || 72.8777,
     });
   };
+  
+  // Get selected donation ID for map
+  const selectedDonationId = selectedDonation?.donation_id || null;
 
   return (
     <div className="vol-dashboard">
@@ -219,13 +222,8 @@ function VolDash() {
         {/* Map Panel */}
         <div className="map-panel">
           <h2>Live Map</h2>
-          {selectedDonation ? (
-            <signupMap
-              initialLocation={mapLocation}
-              onLocationChange={(lat, lng) =>
-                setMapLocation({ lat, lng })
-              }
-            />
+          {selectedDonationId ? (
+            <VolunteerDashMap donationId={selectedDonationId} />
           ) : (
             <p>Select a donation to view its location 🗺️</p>
           )}
