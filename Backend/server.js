@@ -354,6 +354,9 @@ app.get("/api/volunteer/accepted", async (req, res) => {
         d.unit,
         d.status,
         d.description,
+        d.expiry_time,
+        d.volunteer_id,
+        d.created_at,
         r.name AS restaurant_name,
         r.latitude AS restaurant_lat,
         r.longitude AS restaurant_lng,
@@ -363,7 +366,8 @@ app.get("/api/volunteer/accepted", async (req, res) => {
       FROM donations d
       LEFT JOIN restaurants r ON d.restaurant_id = r.restaurant_id
       LEFT JOIN ngos n ON d.ngo_id = n.ngo_id
-      WHERE d.status = 'accepted'
+      WHERE d.status = 'accepted' OR d.status = 'picked_up'
+      ORDER BY d.created_at DESC
     `);
 
     res.json(rows);

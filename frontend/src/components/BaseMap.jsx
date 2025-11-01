@@ -219,9 +219,26 @@ const BaseMap = ({ donationId, restaurantLocation, ngoLocation, role }) => {
 
     // If volunteer role, start tracking volunteer location
     if (role === "volunteer" && navigator.geolocation) {
-      const watchId = navigator.geolocation.watchPosition(
+      // Request location permission
+      navigator.geolocation.getCurrentPosition(
         (position) => {
+          // Initial position
           const { latitude, longitude } = position.coords;
+          if (!volunteerMarkerRef.current && map) {
+            volunteerMarkerRef.current = L.marker([latitude, longitude], {
+              icon: L.icon({
+                iconUrl: "/photos/tracker.png",
+                iconSize: [30, 30],
+              }),
+            }).addTo(map);
+            volunteerMarkerRef.current.bindPopup("🚴 Volunteer Location (You)");
+            updateRoute(map);
+          } else if (volunteerMarkerRef.current) {
+            volunteerMarkerRef.current.setLatLng([latitude, longitude]);
+            updateRoute(map);
+          }
+          
+          // Emit to socket
           if (socket.current && donationId) {
             socket.current.emit("volunteer-location", {
               donationId,
@@ -230,11 +247,49 @@ const BaseMap = ({ donationId, restaurantLocation, ngoLocation, role }) => {
             });
           }
         },
-        (error) => console.error("Geolocation error:", error),
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        (error) => {
+          console.error("Geolocation error:", error);
+          alert("Please enable location permissions to track your delivery");
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
 
-      return () => navigator.geolocation.clearWatch(watchId);
+      // Watch position for updates
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          
+          // Update marker directly (no need to wait for socket)
+          if (!volunteerMarkerRef.current && map) {
+            volunteerMarkerRef.current = L.marker([latitude, longitude], {
+              icon: L.icon({
+                iconUrl: "/photos/tracker.png",
+                iconSize: [30, 30],
+              }),
+            }).addTo(map);
+            volunteerMarkerRef.current.bindPopup("🚴 Volunteer Location (You)");
+            updateRoute(map);
+          } else if (volunteerMarkerRef.current) {
+            volunteerMarkerRef.current.setLatLng([latitude, longitude]);
+            updateRoute(map);
+          }
+          
+          // Emit to socket for real-time sharing
+          if (socket.current && donationId) {
+            socket.current.emit("volunteer-location", {
+              donationId,
+              lat: latitude,
+              lng: longitude,
+            });
+          }
+        },
+        (error) => console.error("Geolocation watch error:", error),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      );
+
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+      };
     }
   }, [map, donationDetails, role, donationId]);
 
