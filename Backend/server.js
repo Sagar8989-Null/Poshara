@@ -131,7 +131,6 @@ app.get("/api/leaderboard", async (req, res) => {
     LEFT JOIN volunteers v ON u.user_id = v.volunteer_id
     ORDER BY (COALESCE(r.total_donations,0) + COALESCE(v.total_transports,0) + COALESCE(n.total_received,0)) DESC;
   `;
-
   try {
     const [results] = await db.query(sql);
     res.json(results);
@@ -140,40 +139,48 @@ app.get("/api/leaderboard", async (req, res) => {
   }
 });
 
-// ✅ CREATE DONATION
+// ✅ CREATE DONATION (Restaurant)
 app.post("/api/donations", async (req, res) => {
   try {
-    let { restaurant_id, food_type, quantity, unit, expiry_time, description, status } = req.body;
-
-    if (!restaurant_id || !food_type || !quantity || !unit || !expiry_time)
-      return res.status(400).json({ error: "Missing required fields" });
-
-     if (!expiry_time && food_type === "unpackaged") {
-      const expiry = new Date();
-      expiry.setHours(expiry.getHours() + 4);
-      expiry_time = expiry.toISOString().slice(0, 19).replace("T", " ");
-    }
-
-    // ✅ Convert to MySQL datetime format
-    if (expiry_time) {
-      expiry_time = new Date(expiry_time).toISOString().slice(0, 19).replace("T", " ");
-    }
-
-    const query = `
-      INSERT INTO donations 
-      (restaurant_id, food_type, quantity, unit, expiry_time, description, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `;
-
-    const [result] = await db.query(query, [
+    let {
       restaurant_id,
-      food_type,
+      food_name,
+      food_variety,
+      food_category,
       quantity,
       unit,
       expiry_time,
-      description || "",
-      status || "available",
-    ]);
+      description,
+      status,
+    } = req.body;
+
+    if (!restaurant_id || !food_name || !food_variety || !food_category || !quantity || !unit)
+      return res.status(400).json({ error: "Missing required fields" });
+
+    if (food_category === "Cooked" && !expiry_time) {
+      const expiry = new Date();
+      expiry.setHours(expiry.getHours() + 4);
+      expiry_time = expiry.toISOString().slice(0, 19).replace("T", " ");
+    } else {
+      expiry_time = new Date(expiry_time).toISOString().slice(0, 19).replace("T", " ");
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO donations 
+        (restaurant_id, food_name, food_variety, food_category, quantity, unit, expiry_time, description, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        restaurant_id,
+        food_name,
+        food_variety,
+        food_category,
+        quantity,
+        unit,
+        expiry_time,
+        description || "",
+        status || "available",
+      ]
+    );
 
     res.status(201).json({
       message: "Donation created successfully",
@@ -185,48 +192,28 @@ app.post("/api/donations", async (req, res) => {
   }
 });
 
-// ✅ GET DONATIONS BY RESTAURANT
-app.get("/api/donations", async (req, res) => {
-  try {
-    const { restaurant_id } = req.query;
-
-    if (!restaurant_id)
-      return res.status(400).json({ error: "restaurant_id is required" });
-
-    const [rows] = await db.query(
-      "SELECT * FROM donations WHERE restaurant_id = ? ORDER BY created_at DESC",
-      [restaurant_id]
-    );
-
-    res.json(rows);
-  } catch (error) {
-    console.error("Error fetching donations:", error);
-    res.status(500).json({ error: "Failed to fetch donations" });
-  }
-});
-
-// ✅ DELETE DONATION
-app.delete("/api/donations/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const [result] = await db.query("DELETE FROM donations WHERE donation_id = ?", [id]);
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Donation not found" });
-
-    res.json({ message: "Donation deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting donation:", error);
-    res.status(500).json({ error: "Failed to delete donation" });
-  }
-});
-// ✅ GET ALL AVAILABLE DONATIONS (for NGO Dashboard)
+// ✅ GET ALL AVAILABLE DONATIONS (for NGO dashboard)
 app.get("/api/donations/available", async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM donations WHERE status = 'available' ORDER BY created_at DESC"
-    );
+    const { food_variety, food_category, min_servings } = req.query;
+    let sql = `SELECT * FROM donations WHERE status = 'available'`;
+    const params = [];
+
+    if (food_variety) {
+      sql += " AND food_variety = ?";
+      params.push(food_variety);
+    }
+    if (food_category) {
+      sql += " AND food_category = ?";
+      params.push(food_category);
+    }
+    if (min_servings) {
+      sql += " AND quantity >= ?";
+      params.push(Number(min_servings));
+    }
+
+    sql += " ORDER BY created_at DESC";
+    const [rows] = await db.query(sql, params);
     res.json(rows);
   } catch (error) {
     console.error("Error fetching available donations:", error);
@@ -234,7 +221,7 @@ app.get("/api/donations/available", async (req, res) => {
   }
 });
 
-// ✅ NGO ACCEPTS DONATION (assign ngo_id + update status)
+// ✅ NGO ACCEPTS DONATION
 app.put("/api/donations/:id/accept", async (req, res) => {
   try {
     const { id } = req.params;
@@ -242,12 +229,9 @@ app.put("/api/donations/:id/accept", async (req, res) => {
 
     if (!ngo_id) return res.status(400).json({ error: "ngo_id is required" });
 
-    // 🔹 Check if NGO exists
     const [ngoCheck] = await db.query("SELECT ngo_id FROM ngos WHERE ngo_id = ?", [ngo_id]);
-    if (ngoCheck.length === 0)
-      return res.status(400).json({ error: "NGO not found in database" });
+    if (ngoCheck.length === 0) return res.status(400).json({ error: "NGO not found in database" });
 
-    // 🔹 Proceed to update donation
     await db.query(
       "UPDATE donations SET ngo_id = ?, status = 'accepted' WHERE donation_id = ?",
       [ngo_id, id]
@@ -260,50 +244,62 @@ app.put("/api/donations/:id/accept", async (req, res) => {
   }
 });
 
-// ✅ GET DONATION DETAILS WITH LOCATIONS
+// ✅ GET DONATION DETAILS (for NGO + Volunteer maps)
 app.get("/api/donations/:id/details", async (req, res) => {
   try {
     const { id } = req.params;
-    const [donation] = await db.query(
-      "SELECT * FROM donations WHERE donation_id = ?",
-      [id]
-    );
-
-    if (donation.length === 0) {
-      return res.status(404).json({ error: "Donation not found" });
-    }
+    const [donation] = await db.query("SELECT * FROM donations WHERE donation_id = ?", [id]);
+    if (donation.length === 0) return res.status(404).json({ error: "Donation not found" });
 
     const donationData = donation[0];
 
-    // Get restaurant location
+    // Restaurant
     const [restaurant] = await db.query(
       "SELECT latitude, longitude, name FROM restaurants WHERE restaurant_id = ?",
       [donationData.restaurant_id]
     );
 
+    // NGO
     let ngoLocation = null;
     if (donationData.ngo_id) {
       const [ngo] = await db.query(
         "SELECT latitude, longitude, organization_name FROM ngos WHERE ngo_id = ?",
         [donationData.ngo_id]
       );
-      if (ngo.length > 0) {
+      if (ngo.length > 0)
         ngoLocation = {
           lat: ngo[0].latitude,
           lng: ngo[0].longitude,
-          name: ngo[0].organization_name
+          name: ngo[0].organization_name,
         };
-      }
+    }
+
+    // Volunteer (if assigned)
+    let volunteerLocation = null;
+    if (donationData.volunteer_id) {
+      const [vol] = await db.query(
+        "SELECT latitude, longitude, name FROM volunteers WHERE volunteer_id = ?",
+        [donationData.volunteer_id]
+      );
+      if (vol.length > 0)
+        volunteerLocation = {
+          lat: vol[0].latitude,
+          lng: vol[0].longitude,
+          name: vol[0].name,
+        };
     }
 
     res.json({
       donation: donationData,
-      restaurant: restaurant.length > 0 ? {
-        lat: restaurant[0].latitude,
-        lng: restaurant[0].longitude,
-        name: restaurant[0].name
-      } : null,
-      ngo: ngoLocation
+      restaurant: restaurant.length
+        ? {
+            lat: restaurant[0].latitude,
+            lng: restaurant[0].longitude,
+            name: restaurant[0].name,
+          }
+        : null,
+      ngo: ngoLocation,
+      volunteer: volunteerLocation,
     });
   } catch (error) {
     console.error("Error fetching donation details:", error);
@@ -311,42 +307,15 @@ app.get("/api/donations/:id/details", async (req, res) => {
   }
 });
 
-// ✅ Fetch all donations accepted by NGOs (for volunteers)
-app.get("/api/donations/accepted", async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM donations WHERE status = 'accepted'"
-    );
-    res.json(rows);
-  } catch (error) {
-    console.error("Error fetching picked donations:", error);
-    res.status(500).json({ error: "Failed to fetch picked donations" });
-  }
-});
-
-// ✅ GET NGO’S ASSIGNED DONATIONS
-app.get("/api/donations/ngo/:ngo_id", async (req, res) => {
-  try {
-    const { ngo_id } = req.params;
-    const [rows] = await db.query(
-      "SELECT * FROM donations WHERE ngo_id = ? ORDER BY created_at DESC",
-      [ngo_id]
-    );
-    res.json(rows);
-  } catch (error) {
-    console.error("Error fetching NGO donations:", error);
-    res.status(500).json({ error: "Failed to fetch NGO donations" });
-  }
-});
-
-
-// ✅ Get all donations accepted by NGOs (ready for pickup)
+// ✅ Get all donations accepted by NGOs (for volunteers)
 app.get("/api/volunteer/accepted", async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT 
         d.donation_id,
-        d.food_type,
+        d.food_name,
+        d.food_variety,
+        d.food_category,
         d.quantity,
         d.unit,
         d.status,
@@ -363,10 +332,9 @@ app.get("/api/volunteer/accepted", async (req, res) => {
       FROM donations d
       LEFT JOIN restaurants r ON d.restaurant_id = r.restaurant_id
       LEFT JOIN ngos n ON d.ngo_id = n.ngo_id
-      WHERE d.status = 'accepted' OR d.status = 'picked_up'
+      WHERE d.status IN ('accepted', 'picked_up')
       ORDER BY d.created_at DESC
     `);
-
     res.json(rows);
   } catch (error) {
     console.error("Error fetching accepted donations:", error);
@@ -374,45 +342,7 @@ app.get("/api/volunteer/accepted", async (req, res) => {
   }
 });
 
-// ✅ Volunteer picks up a donation
-app.put("/api/volunteer/pickup/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { volunteer_id } = req.body;
-
-    if (!volunteer_id)
-      return res.status(400).json({ error: "volunteer_id is required" });
-
-    await db.query(
-      "UPDATE donations SET volunteer_id = ?, status = 'picked_up' WHERE donation_id = ?",
-      [volunteer_id, id]
-    );
-
-    res.json({ message: "Donation picked up by volunteer" });
-  } catch (error) {
-    console.error("Error updating pickup:", error);
-    res.status(500).json({ error: "Failed to update pickup" });
-  }
-});
-
-// ✅ VOLUNTEER MARKS DELIVERY COMPLETE
-app.put("/api/volunteer/deliver/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    await db.query(
-      "UPDATE donations SET status = 'delivered' WHERE donation_id = ?",
-      [id]
-    );
-
-    res.json({ message: "Donation marked as delivered" });
-  } catch (error) {
-    console.error("Error delivering donation:", error);
-    res.status(500).json({ error: "Failed to update delivery" });
-  }
-});
-
-// ✅ Volunteer Accept Donation
+// ✅ Volunteer accepts donation (pickup)
 app.put("/api/volunteer/accept/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -421,7 +351,7 @@ app.put("/api/volunteer/accept/:id", async (req, res) => {
     if (!volunteer_id) return res.status(400).json({ error: "volunteer_id is required" });
 
     const [volCheck] = await db.query("SELECT volunteer_id FROM volunteers WHERE volunteer_id = ?", [volunteer_id]);
-    if (volCheck.length === 0) return res.status(400).json({ error: "Volunteer not found" });
+    if (volCheck.length === 0) return res.status(404).json({ error: "Volunteer not found" });
 
     await db.query(
       "UPDATE donations SET volunteer_id = ?, status = 'picked_up' WHERE donation_id = ?",
@@ -430,24 +360,22 @@ app.put("/api/volunteer/accept/:id", async (req, res) => {
 
     res.json({ message: "Donation accepted for delivery" });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error accepting donation:", error);
     res.status(500).json({ error: "Failed to assign volunteer" });
   }
 });
 
-// ✅ Volunteer Mark Delivered
+// ✅ Volunteer marks delivery complete
 app.put("/api/volunteer/deliver/:id", async (req, res) => {
   try {
     const { id } = req.params;
     await db.query("UPDATE donations SET status = 'delivered' WHERE donation_id = ?", [id]);
     res.json({ message: "Donation marked as delivered" });
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Failed to mark as delivered" });
+    console.error("Error delivering donation:", error);
+    res.status(500).json({ error: "Failed to mark delivered" });
   }
 });
-
-
 
 // ✅ START SERVER
 const PORT = process.env.PORT || 5000;

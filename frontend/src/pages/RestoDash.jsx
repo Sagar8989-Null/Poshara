@@ -6,29 +6,27 @@ import RestoDashMap from '../components/RestoDashMap';
 function RestoDash() {
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
-    foodType: 'Cooked',
-    foodName: '',
-    quantity: '',
-    unit: 'Kilograms (kg)',
-    expiryTime: '',
+    foodName: "",
+    foodVariety: "Veg",      // 🆕 Veg / Non-Veg
+    foodCategory: "Cooked",  // 🆕 Cooked / Packaged
+    quantity: "",
+    unit: "Kilograms (kg)",
+    expiryTime: "",
     expiryHours: 4,
-    description: ''
+    description: ""
   });
 
   const [donations, setDonations] = useState([]);
   const [uploadedImage, setUploadedImage] = useState('');
   const [selectedDonationId, setSelectedDonationId] = useState(null);
 
-  // Load user data from localStorage
+  // 🧠 Load user data
   useEffect(() => {
     const userData = localStorage.getItem("user");
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    if (userData) setUser(JSON.parse(userData));
   }, []);
 
-
-  // 🧠 Stats for dashboard
+  // 🧮 Dashboard stats
   const stats = {
     total: donations.length,
     available: donations.filter(d => d.status === 'Available').length,
@@ -41,25 +39,7 @@ function RestoDash() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🧩 Image upload
-  const handleImageClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          setUploadedImage(event.target.result);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
-  };
-
-  // 🧩 OCR extracted data (only when packaged)
+  // 🧩 OCR extracted data
   const handleOCRExtractedData = (ocrData) => {
     setFormData(prev => ({
       ...prev,
@@ -71,67 +51,59 @@ function RestoDash() {
     }));
   };
 
-  // 🧠 Fetch all donations on page load
+  // 🧠 Fetch donations for logged-in restaurant
   useEffect(() => {
     const fetchDonations = async () => {
       try {
         const userData = localStorage.getItem("user");
         const parsedUser = userData ? JSON.parse(userData) : null;
-        const restaurantId = parsedUser?.user_id || 1; // Use logged-in restaurant ID
+        const restaurantId = parsedUser?.user_id || 1;
+
         const response = await fetch(`http://localhost:5000/api/donations?restaurant_id=${restaurantId}`);
         const data = await response.json();
-
         if (!response.ok) throw new Error(data.error || "Failed to fetch donations");
 
-        const formattedDonations = data.map(donation => ({
-          id: donation.donation_id,
-          name: donation.food_type,
-          quantity: `${donation.quantity} ${donation.unit}`,
+        const formatted = data.map(d => ({
+          id: d.donation_id,
+          name: d.food_name,
+          quantity: `${d.quantity} ${d.unit}`,
           image: 'https://via.placeholder.com/100',
-          status: donation.status.charAt(0).toUpperCase() + donation.status.slice(1),
-          details: donation.description || "No additional details provided",
-          expiry: new Date(donation.expiry_time).toLocaleString(),
+          status: d.status.charAt(0).toUpperCase() + d.status.slice(1),
+          details: d.description || "No additional details",
+          expiry: new Date(d.expiry_time).toLocaleString(),
         }));
-
-        setDonations(formattedDonations);
+        setDonations(formatted);
       } catch (error) {
         console.error("Error fetching donations:", error);
       }
     };
-
     fetchDonations();
   }, []);
 
-  // 🗑️ Delete donation
-  const handleDeleteDonation = async (donationId) => {
+  // 🗑 Delete donation
+  const handleDeleteDonation = async (id) => {
     if (!window.confirm("Are you sure you want to delete this donation?")) return;
-
     try {
-      const response = await fetch(`http://localhost:5000/api/donations/${donationId}`, {
-        method: 'DELETE'
-      });
-
+      const response = await fetch(`http://localhost:5000/api/donations/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error("Failed to delete donation");
-
-      setDonations(donations.filter(donation => donation.id !== donationId));
+      setDonations(donations.filter(d => d.id !== id));
       alert("Donation deleted successfully!");
     } catch (error) {
       console.error("Error deleting donation:", error);
-      alert("Failed to delete donation. Please try again.");
+      alert("Failed to delete donation.");
     }
   };
 
-  // 🧾 Handle submit
+  // ✅ Create donation
   const handleSubmit = async () => {
-    if (!formData.foodName || !formData.quantity || (!formData.expiryTime && formData.foodType === 'Packaged')) {
+    if (!formData.foodName || !formData.quantity || (!formData.expiryTime && formData.foodCategory === 'Packaged')) {
       alert('Please fill in all required fields');
       return;
     }
 
     try {
       let expiryFinal = '';
-
-      if (formData.foodType === 'Packaged') {
+      if (formData.foodCategory === 'Packaged') {
         expiryFinal = formData.expiryTime;
       } else {
         const expiryDate = new Date();
@@ -141,10 +113,12 @@ function RestoDash() {
 
       const userData = localStorage.getItem("user");
       const parsedUser = userData ? JSON.parse(userData) : null;
-      
+
       const donationData = {
         restaurant_id: parsedUser?.user_id || 1,
-        food_type: formData.foodName,
+        food_name: formData.foodName,
+        food_variety: formData.foodVariety,
+        food_category: formData.foodCategory,
         quantity: parseInt(formData.quantity),
         unit: formData.unit,
         expiry_time: expiryFinal,
@@ -152,54 +126,54 @@ function RestoDash() {
         status: 'available'
       };
 
-      const response = await fetch('http://localhost:5000/api/donations', {
+      const res = await fetch('http://localhost:5000/api/donations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(donationData)
       });
 
-      if (!response.ok) throw new Error('Failed to create donation');
-
-      const result = await response.json();
+      if (!res.ok) throw new Error('Failed to create donation');
+      const result = await res.json();
 
       const newDonation = {
         id: result.donation_id || Date.now(),
         name: formData.foodName,
         quantity: `${formData.quantity} ${formData.unit}`,
-        image: uploadedImage,
+        image: uploadedImage || 'https://via.placeholder.com/100',
         status: 'Available',
-        details: formData.description || 'No additional details provided',
+        details: formData.description || 'No additional details',
         expiry: new Date(expiryFinal).toLocaleString()
       };
 
       setDonations([newDonation, ...donations]);
-
       setFormData({
-        foodType: 'Cooked',
-        foodName: '',
-        quantity: '',
-        unit: 'Kilograms (kg)',
-        expiryTime: '',
+        foodName: "",
+        foodVariety: "Veg",
+        foodCategory: "Cooked",
+        quantity: "",
+        unit: "Kilograms (kg)",
+        expiryTime: "",
         expiryHours: 4,
-        description: ''
+        description: ""
       });
 
       alert('Donation created successfully!');
     } catch (error) {
       console.error('Error creating donation:', error);
-      alert('Failed to create donation. Please try again.');
+      alert('Failed to create donation.');
     }
   };
 
   const handleCancel = () => {
     setFormData({
-      foodType: 'Cooked',
-      foodName: '',
-      quantity: '',
-      unit: 'Kilograms (kg)',
-      expiryTime: '',
+      foodName: "",
+      foodVariety: "Veg",
+      foodCategory: "Cooked",
+      quantity: "",
+      unit: "Kilograms (kg)",
+      expiryTime: "",
       expiryHours: 4,
-      description: ''
+      description: ""
     });
   };
 
@@ -214,15 +188,12 @@ function RestoDash() {
             <div className="user-details">
               <p><strong>Role:</strong> {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</p>
               <p><strong>User ID:</strong> {user.user_id}</p>
-              {/* {user.latitude && user.longitude && (
-                <p><strong>Location:</strong> {user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</p>
-              )} */}
             </div>
           </div>
         )}
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="stats-container">
         <div className="stat-card"><div className="stat-label">Total Donations</div><div className="stat-value total">{stats.total}</div></div>
         <div className="stat-card"><div className="stat-label">Available</div><div className="stat-value available">{stats.available}</div></div>
@@ -231,34 +202,43 @@ function RestoDash() {
       </div>
 
       <div className="main-content">
-        {/* Left Sidebar */}
+        {/* Form */}
         <div className="form-sidebar">
           <h2>Add Food Donation</h2>
           <p className="form-subtitle">Share surplus food with your community</p>
 
+          {/* Food Variety */}
           <div className="form-group">
-            <label>Food Type</label>
-            <select name="foodType" value={formData.foodType} onChange={handleChange} className="form-select">
+            <label>Food Variety</label>
+            <select name="foodVariety" value={formData.foodVariety} onChange={handleChange} className="form-select">
+              <option value="Veg">Veg</option>
+              <option value="Non-Veg">Non-Veg</option>
+            </select>
+          </div>
+
+          {/* Food Category */}
+          <div className="form-group">
+            <label>Food Category</label>
+            <select name="foodCategory" value={formData.foodCategory} onChange={handleChange} className="form-select">
               <option value="Cooked">Cooked Food</option>
               <option value="Packaged">Packaged Food</option>
             </select>
           </div>
 
-          {/* OCR appears only for Packaged food */}
-          {formData.foodType === 'Packaged' && (
+          {formData.foodCategory === 'Packaged' && (
             <div className="ocr-section">
               <OCR onExtractedData={handleOCRExtractedData} />
             </div>
           )}
 
           <div className="form-group">
-            <label>Food Name <span className="required">*</span></label>
+            <label>Food Name *</label>
             <input type="text" name="foodName" value={formData.foodName} onChange={handleChange} className="form-input" />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Quantity <span className="required">*</span></label>
+              <label>Quantity *</label>
               <input type="number" name="quantity" value={formData.quantity} onChange={handleChange} className="form-input" />
             </div>
             <div className="form-group">
@@ -273,16 +253,16 @@ function RestoDash() {
             </div>
           </div>
 
-          {/* Conditional Expiry Field */}
+          {/* Expiry */}
           <div className="form-group">
-            {formData.foodType === 'Packaged' ? (
+            {formData.foodCategory === 'Packaged' ? (
               <>
-                <label>Expiry Date <span className="required">*</span></label>
+                <label>Expiry Date *</label>
                 <input type="date" name="expiryTime" value={formData.expiryTime} onChange={handleChange} className="form-input" />
               </>
             ) : (
               <>
-                <label>Expiry Time (Hours) <span className="required">*</span></label>
+                <label>Expiry Time (Hours)</label>
                 <input type="number" name="expiryHours" value={formData.expiryHours} onChange={handleChange} className="form-input" min="1" max="48" />
                 <p className="hint">Default is 4 hours.</p>
               </>
@@ -300,34 +280,33 @@ function RestoDash() {
           </div>
         </div>
 
-        {/* Right Section: Donation List */}
+        {/* Donations List */}
         <div className="donations-section">
           <h2>Your Donations</h2>
-
           <div className="donations-list">
             {donations.length === 0 ? (
               <p className="no-donations">No donations yet. Add your first one!</p>
             ) : (
-              donations.map(donation => (
-                // <div key={donation.id} className="donation-card">
-                <div className="donation-card" onClick={() => setSelectedDonationId(donation.id)}>
-                  <img src={donation.image || 'https://via.placeholder.com/100'} alt={donation.name} className="donation-image" />
+              donations.map(d => (
+                <div key={d.id} className="donation-card" onClick={() => setSelectedDonationId(d.id)}>
+                  <img src={d.image} alt={d.name} className="donation-image" />
                   <div className="donation-details">
                     <div className="donation-header">
-                      <h3>{donation.name}</h3>
-                      <span className={`status-badge ${donation.status.toLowerCase()}`}>{donation.status}</span>
+                      <h3>{d.name}</h3>
+                      <span className={`status-badge ${d.status.toLowerCase()}`}>{d.status}</span>
                     </div>
-                    <p className="donation-quantity">{donation.quantity}</p>
-                    <p className="donation-info">{donation.details}</p>
-                    <p className="donation-expiry">Expires: {donation.expiry}</p>
-
-                    <button className="delete-button" onClick={() => handleDeleteDonation(donation.id)}>Delete</button>
+                    <p className="donation-quantity">{d.quantity}</p>
+                    <p className="donation-info">{d.details}</p>
+                    <p className="donation-expiry">Expires: {d.expiry}</p>
+                    <button className="delete-button" onClick={() => handleDeleteDonation(d.id)}>Delete</button>
                   </div>
                 </div>
               ))
             )}
           </div>
         </div>
+
+        {/* Map Section */}
         {selectedDonationId && (
           <div className="map-section">
             <h3>Map for Donation #{selectedDonationId}</h3>
