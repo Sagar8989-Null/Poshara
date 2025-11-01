@@ -1,151 +1,18 @@
-.vol-dashboard {
-  padding: 2rem;
-  background: #f6f8fa;
-  min-height: 100vh;
-  font-family: "Poppins", sans-serif;
-}
-
-.vol-header {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.vol-header h1 {
-  color: #2f5233;
-}
-
-.user-profile-section {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: #f0f8f0;
-  border-radius: 8px;
-  border-left: 4px solid #4caf50;
-}
-
-.welcome-text {
-  margin: 0;
-  color: #2f5233;
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.user-details {
-  margin-top: 0.75rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.user-details p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #4b5563;
-}
-
-.user-details strong {
-  color: #1f2937;
-  margin-right: 0.5rem;
-}
-
-.vol-stats {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.stat-card {
-  background: #2f5233;
-  color: white;
-  padding: 1.2rem 2rem;
-  border-radius: 10px;
-  text-align: center;
-  flex: 1;
-}
-
-.stat-card.claimed {
-  background: #3e7c4b;
-}
-.stat-card.delivered {
-  background: #4caf50;
-}
-
-.vol-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.donation-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  margin-bottom: 1rem;
-}
-
-.donation-info h3 {
-  margin: 0 0 0.4rem 0;
-  color: #2f5233;
-}
-
-.donation-actions {
-  display: flex;
-  justify-content: flex-start;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
-}
-
-.claim-btn,
-.map-btn,
-.pickup-btn,
-.deliver-btn {
-  background: #2f5233;
+.accept-btn, .deliver-btn {
+  background: #355E3B;
   color: white;
   border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.claim-btn:hover,
-.deliver-btn:hover {
-  background: #256028;
-}
-
-.upload-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #2f5233;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: 6px;
-}
-
-.map-panel {
-  background: white;
   border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.map-panel h2 {
-  color: #2f5233;
-  margin-bottom: 0.5rem;
-}
-
-.delivered-status {
-  color: #34d399;
-  font-weight: 600;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-@media (max-width: 992px) {
-  .vol-content {
-    grid-template-columns: 1fr;
-  }
+.accept-btn:hover, .deliver-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(53, 94, 59, 0.3);
 }
