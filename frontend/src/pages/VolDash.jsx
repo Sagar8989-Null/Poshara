@@ -4,11 +4,20 @@ import { CheckCircle, MapPin, Truck, Clock, Upload } from "lucide-react";
 import signupMap from "../components/signupMap";
 
 function VolDash() {
+  const [user, setUser] = useState(null);
   const [donations, setDonations] = useState([]);
   const [claimed, setClaimed] = useState([]);
   const [mapLocation, setMapLocation] = useState({ lat: null, lng: null });
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [proofImage, setProofImage] = useState(null);
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   // 📊 Stats
   const stats = {
@@ -92,7 +101,16 @@ function VolDash() {
       {/* Header */}
       <div className="vol-header">
         <h1>Volunteer Dashboard</h1>
-        <p>Welcome back 🌸 Ready to deliver smiles today?</p>
+        {user && (
+          <div className="user-profile-section">
+            <p className="welcome-text">Welcome, {user.name}! 🌸 Ready to deliver smiles today?</p>
+            <div className="user-details">
+              <p><strong>Role:</strong> {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</p>
+              <p><strong>User ID:</strong> {user.user_id}</p>
+            </div>
+          </div>
+        )}
+        {!user && <p>Welcome back 🌸 Ready to deliver smiles today?</p>}
       </div>
 
       {/* Stats */}

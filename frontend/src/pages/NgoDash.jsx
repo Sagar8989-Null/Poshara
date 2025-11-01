@@ -165,13 +165,26 @@ function DonationItem({ donation, onAccept }) {
 }
 
 // --- Main Content ---
-function MainContent({ donations, onMenuClick, onAccept }) {
+function MainContent({ donations, onMenuClick, onAccept, user }) {
   return (
     <main className="main-content">
       <div className="header">
         <Menu className="menu-icon md:hidden" onClick={onMenuClick} />
         <h2 id="ngo-dash">NGO Dashboard</h2>
       </div>
+
+      {user && (
+        <div className="user-profile-section">
+          <p className="welcome-text">Welcome, {user.name}!</p>
+          <div className="user-details">
+            <p><strong>Role:</strong> {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</p>
+            <p><strong>User ID:</strong> {user.user_id}</p>
+            {/* {user.latitude && user.longitude && (
+              <p><strong>Location:</strong> {user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</p>
+            )} */}
+          </div>
+        </div>
+      )}
 
       <h3 className="section-title">Available Donations</h3>
 
@@ -210,6 +223,7 @@ function Footer() {
 
 // --- Main Dashboard Component ---
 export default function NgoDash() {
+  const [user, setUser] = useState(null);
   const [filters, setFilters] = useState({
     distance: 25,
     foodType: "Veg",
@@ -219,7 +233,15 @@ export default function NgoDash() {
 
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const ngoId = 21; // 🔹 Replace later with logged-in NGO ID
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -251,6 +273,15 @@ export default function NgoDash() {
   // 🔹 Accept a donation
   const handleAccept = async (donationId) => {
     try {
+      const userData = localStorage.getItem("user");
+      const parsedUser = userData ? JSON.parse(userData) : null;
+      const ngoId = parsedUser?.user_id;
+      
+      if (!ngoId) {
+        alert("User not found. Please login again.");
+        return;
+      }
+
       const res = await fetch(
         `http://localhost:5000/api/donations/${donationId}/accept`,
         {
@@ -263,10 +294,11 @@ export default function NgoDash() {
       if (!res.ok) throw new Error("Failed to accept donation");
 
       alert("Donation accepted successfully!");
+      const ngoIdForUpdate = parsedUser?.user_id;
       setDonations((prev) =>
         prev.map((donation) =>
           donation.donation_id === donationId
-            ? { ...donation, status: "accepted", ngo_id: ngoId }
+            ? { ...donation, status: "accepted", ngo_id: ngoIdForUpdate }
             : donation
         )
       );
@@ -295,6 +327,7 @@ export default function NgoDash() {
           donations={donations}
           onMenuClick={() => setIsSidebarOpen(true)}
           onAccept={handleAccept}
+          user={user}
         />
       </div>
       <Footer />

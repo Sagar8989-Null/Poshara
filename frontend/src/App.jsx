@@ -7,6 +7,7 @@ import RestoDash from "./pages/RestoDash";
 import NgoDash from "./pages/NgoDash";
 import VolDash from "./pages/VolDash";
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
 import "./App.css";
 
 function App() {
@@ -19,9 +20,30 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard/restaurant" element={<RestoDash />} />
-          <Route path="/dashboard/ngo" element={<NgoDash />} />
-          <Route path="/dashboard/volunteer" element={<VolDash />} />
+          <Route 
+            path="/dashboard/restaurant" 
+            element={
+              <ProtectedRoute>
+                <RestoDash />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/ngo" 
+            element={
+              <ProtectedRoute>
+                <NgoDash />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/dashboard/volunteer" 
+            element={
+              <ProtectedRoute>
+                <VolDash />
+              </ProtectedRoute>
+            } 
+          />
         </Routes>
       </div>
     </Router>

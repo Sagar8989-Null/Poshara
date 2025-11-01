@@ -4,6 +4,7 @@ import OCR from '../components/OCR';
 import RestoDashMap from '../components/RestoDashMap';
 
 function RestoDash() {
+  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     foodType: 'Cooked',
     foodName: '',
@@ -17,6 +18,14 @@ function RestoDash() {
   const [donations, setDonations] = useState([]);
   const [uploadedImage, setUploadedImage] = useState('');
   const [selectedDonationId, setSelectedDonationId] = useState(null);
+
+  // Load user data from localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
 
   // 🧠 Stats for dashboard
@@ -66,7 +75,9 @@ function RestoDash() {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const restaurantId = 1; // Replace with logged-in restaurant ID
+        const userData = localStorage.getItem("user");
+        const parsedUser = userData ? JSON.parse(userData) : null;
+        const restaurantId = parsedUser?.user_id || 1; // Use logged-in restaurant ID
         const response = await fetch(`http://localhost:5000/api/donations?restaurant_id=${restaurantId}`);
         const data = await response.json();
 
@@ -128,8 +139,11 @@ function RestoDash() {
         expiryFinal = expiryDate.toISOString();
       }
 
+      const userData = localStorage.getItem("user");
+      const parsedUser = userData ? JSON.parse(userData) : null;
+      
       const donationData = {
-        restaurant_id: 1,
+        restaurant_id: parsedUser?.user_id || 1,
         food_type: formData.foodName,
         quantity: parseInt(formData.quantity),
         unit: formData.unit,
@@ -194,8 +208,18 @@ function RestoDash() {
       {/* Header */}
       <div className="dashboard-header">
         <h1>Restaurant Dashboard</h1>
-        <p className="welcome-text">Welcome, Tanvi and Sahil </p>
-        <p className="welcome-text">Joshya Hadd ikd tujh ky kaam naahiye</p>
+        {user && (
+          <div className="user-profile-section">
+            <p className="welcome-text">Welcome, {user.name}!</p>
+            <div className="user-details">
+              <p><strong>Role:</strong> {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</p>
+              <p><strong>User ID:</strong> {user.user_id}</p>
+              {/* {user.latitude && user.longitude && (
+                <p><strong>Location:</strong> {user.latitude.toFixed(4)}, {user.longitude.toFixed(4)}</p>
+              )} */}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Stats Cards */}

@@ -26,6 +26,32 @@
   font-size: 0.95rem;
 }
 
+.user-profile-section {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  border-left: 4px solid #3b82f6;
+}
+
+.user-details {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-details p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.user-details strong {
+  color: #1f2937;
+  margin-right: 0.5rem;
+}
+
 /* Stats Cards */
 .stats-container {
   padding: 2rem;
