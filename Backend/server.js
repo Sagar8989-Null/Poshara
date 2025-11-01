@@ -192,6 +192,43 @@ app.post("/api/donations", async (req, res) => {
   }
 });
 
+// ✅ GET DONATIONS BY RESTAURANT
+app.get("/api/donations", async (req, res) => {
+  try {
+    const { restaurant_id } = req.query;
+
+    if (!restaurant_id)
+      return res.status(400).json({ error: "restaurant_id is required" });
+
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE restaurant_id = ? ORDER BY created_at DESC",
+      [restaurant_id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching donations:", error);
+    res.status(500).json({ error: "Failed to fetch donations" });
+  }
+});
+
+// ✅ DELETE DONATION
+app.delete("/api/donations/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [result] = await db.query("DELETE FROM donations WHERE donation_id = ?", [id]);
+
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "Donation not found" });
+
+    res.json({ message: "Donation deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting donation:", error);
+    res.status(500).json({ error: "Failed to delete donation" });
+  }
+});
+
 // ✅ GET ALL AVAILABLE DONATIONS (for NGO dashboard)
 app.get("/api/donations/available", async (req, res) => {
   try {
@@ -241,6 +278,34 @@ app.put("/api/donations/:id/accept", async (req, res) => {
   } catch (error) {
     console.error("Error accepting donation:", error);
     res.status(500).json({ error: "Failed to accept donation" });
+  }
+});
+
+// ✅ Fetch all donations accepted by NGOs (for volunteers)
+app.get("/api/donations/accepted", async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE status = 'accepted'"
+    );
+    res.json(rows);
+  } catch (error) {
+    console.error("Error fetching picked donations:", error);
+    res.status(500).json({ error: "Failed to fetch picked donations" });
+  }
+});
+
+// ✅ GET NGO’S ASSIGNED DONATIONS
+app.get("/api/donations/ngo/:ngo_id", async (req, res) => {
+  try {
+    const { ngo_id } = req.params;
+    const [rows] = await db.query(
+      "SELECT * FROM donations WHERE ngo_id = ? ORDER BY created_at DESC",
+      [ngo_id]
+    );
+    res.json(rows);
+  } catch (error) {s
+    console.error("Error fetching NGO donations:", error);
+    res.status(500).json({ error: "Failed to fetch NGO donations" });
   }
 });
 
@@ -339,6 +404,44 @@ app.get("/api/volunteer/accepted", async (req, res) => {
   } catch (error) {
     console.error("Error fetching accepted donations:", error);
     res.status(500).json({ error: "Failed to fetch accepted donations" });
+  }
+});
+
+// ✅ Volunteer picks up a donation
+app.put("/api/volunteer/pickup/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { volunteer_id } = req.body;
+
+    if (!volunteer_id)
+      return res.status(400).json({ error: "volunteer_id is required" });
+
+    await db.query(
+      "UPDATE donations SET volunteer_id = ?, status = 'picked_up' WHERE donation_id = ?",
+      [volunteer_id, id]
+    );
+
+    res.json({ message: "Donation picked up by volunteer" });
+  } catch (error) {
+    console.error("Error updating pickup:", error);
+    res.status(500).json({ error: "Failed to update pickup" });
+  }
+});
+
+// ✅ VOLUNTEER MARKS DELIVERY COMPLETE
+app.put("/api/volunteer/deliver/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.query(
+      "UPDATE donations SET status = 'delivered' WHERE donation_id = ?",
+      [id]
+    );
+
+    res.json({ message: "Donation marked as delivered" });
+  } catch (error) {
+    console.error("Error delivering donation:", error);
+    res.status(500).json({ error: "Failed to update delivery" });
   }
 });
 

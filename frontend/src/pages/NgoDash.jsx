@@ -39,6 +39,25 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
         </div>
 
         <div className="filters-container">
+          {/* <div className="filter-card">
+            <div className="filter-header">
+              <label htmlFor="distance">
+                <Ruler className="icon purple" />
+                Distance
+              </label>
+              <span className="distance-value">{distance} km</span>
+            </div>
+            <input
+              type="range"
+              id="distance"
+              name="distance"
+              min="0"
+              max="50"
+              value={distance}
+              onChange={handleInputChange}
+              className="range-slider"
+            />
+          </div> */}
           {/* Food Variety */}
           <div className="filter-card">
             <span className="filter-title">
@@ -235,8 +254,38 @@ export default function NgoDash() {
     if (userData) setUser(JSON.parse(userData));
   }, []);
 
-  // Fetch donations from backend
+  // // Fetch donations from backend
+  // const fetchDonations = async () => {
+  //   try {
+  //     const query = new URLSearchParams({
+  //       food_variety: filters.foodVariety,
+  //       food_category: filters.foodCategory,
+  //       min_servings: filters.servings,
+  //     }).toString();
+
+  //     const res = await fetch(`http://localhost:5000/api/donations/available?${query}`);
+  //     const data = await res.json();
+  //     if (!res.ok) throw new Error(data.error || "Failed to fetch donations");
+  //     setDonations(data);
+  //   } catch (err) {
+  //     console.error("Error fetching donations:", err);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchDonations();
+  //   const interval = setInterval(fetchDonations, 5000);
+  //   return () => clearInterval(interval);
+  // }, [filters]);
+
+  useEffect(() => {
+    // fetchDonations();
+    const interval = setInterval(fetchDonations, 3000);
+    return () => clearInterval(interval);
+  }, [filters]);
+
   const fetchDonations = async () => {
+
     try {
       const query = new URLSearchParams({
         food_variety: filters.foodVariety,
@@ -244,20 +293,21 @@ export default function NgoDash() {
         min_servings: filters.servings,
       }).toString();
 
-      const res = await fetch(`http://localhost:5000/api/donations/available?${query}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to fetch donations");
-      setDonations(data);
+      const [availableRes, acceptedRes] = await Promise.all([
+        fetch(`http://localhost:5000/api/donations/available?${query}`),
+        fetch("http://localhost:5000/api/donations/accepted"),
+      ]);
+
+      const availableData = await availableRes.json();
+      const acceptedData = await acceptedRes.json();
+
+      // 🧩 Merge both
+      const merged = [...availableData, ...acceptedData];
+      setDonations(merged);
     } catch (err) {
       console.error("Error fetching donations:", err);
     }
   };
-
-  useEffect(() => {
-    fetchDonations();
-    const interval = setInterval(fetchDonations, 5000);
-    return () => clearInterval(interval);
-  }, [filters]);
 
   // Accept donation
   const handleAccept = async (donationId) => {
