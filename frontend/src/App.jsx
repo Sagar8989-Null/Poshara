@@ -23,7 +23,7 @@ function App() {
           <Route 
             path="/dashboard/restaurant" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="restaurant">
                 <RestoDash />
               </ProtectedRoute>
             } 
@@ -31,7 +31,7 @@ function App() {
           <Route 
             path="/dashboard/ngo" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="ngo">
                 <NgoDash />
               </ProtectedRoute>
             } 
@@ -39,7 +39,7 @@ function App() {
           <Route 
             path="/dashboard/volunteer" 
             element={
-              <ProtectedRoute>
+              <ProtectedRoute requiredRole="volunteer">
                 <VolDash />
               </ProtectedRoute>
             } 
