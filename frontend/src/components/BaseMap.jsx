@@ -5,12 +5,104 @@ import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import io from "socket.io-client";
 
-const BaseMap = ({ donationId, restaurantLocation }) => {
+const BaseMap = ({ donationId, restaurantLocation, ngoLocation, role }) => {
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const routingControlRef = useRef(null);
   const socket = useRef(null);
   const volunteerMarkerRef = useRef(null);
+  const restaurantMarkerRef = useRef(null);
+  const ngoMarkerRef = useRef(null);
+  const [donationDetails, setDonationDetails] = useState(null);
+
+  // 🗺️ Update route when markers are available
+  const updateRoute = (leafletMap) => {
+    const waypoints = [];
+
+    // Get volunteer location (current position or marker)
+    if (volunteerMarkerRef.current) {
+      const volunteerPos = volunteerMarkerRef.current.getLatLng();
+      waypoints.push(L.latLng(volunteerPos.lat, volunteerPos.lng));
+    }
+
+    // Get restaurant location
+    if (restaurantMarkerRef.current) {
+      const restaurantPos = restaurantMarkerRef.current.getLatLng();
+      waypoints.push(L.latLng(restaurantPos.lat, restaurantPos.lng));
+    }
+
+    // Get NGO location
+    if (ngoMarkerRef.current) {
+      const ngoPos = ngoMarkerRef.current.getLatLng();
+      waypoints.push(L.latLng(ngoPos.lat, ngoPos.lng));
+    }
+
+    // Draw route if we have at least 2 waypoints
+    if (waypoints.length >= 2) {
+      if (routingControlRef.current) {
+        routingControlRef.current.setWaypoints(waypoints);
+      } else {
+        routingControlRef.current = L.Routing.control({
+          waypoints,
+          routeWhileDragging: false,
+          addWaypoints: false,
+          createMarker: () => null,
+          lineOptions: { styles: [{ color: "blue", weight: 5 }] },
+        }).addTo(leafletMap);
+      }
+    }
+  };
+
+  // 🗺️ Draw route between restaurant, NGO, and volunteer (legacy support)
+  const drawRoute = (leafletMap, data) => {
+    const { restaurant, ngo, volunteer } = data;
+    const waypoints = [];
+
+    if (volunteer) {
+      waypoints.push(L.latLng(volunteer.lat, volunteer.lng));
+    }
+    
+    if (restaurant) {
+      waypoints.push(L.latLng(restaurant.lat, restaurant.lng));
+    }
+    
+    if (ngo) {
+      waypoints.push(L.latLng(ngo.lat, ngo.lng));
+    }
+
+    if (waypoints.length >= 2) {
+      if (routingControlRef.current) {
+        routingControlRef.current.setWaypoints(waypoints);
+      } else {
+        routingControlRef.current = L.Routing.control({
+          waypoints,
+          routeWhileDragging: false,
+          addWaypoints: false,
+          createMarker: () => null,
+          lineOptions: { styles: [{ color: "blue", weight: 5 }] },
+        }).addTo(leafletMap);
+      }
+    }
+  };
+
+  // Fetch donation details with locations
+  useEffect(() => {
+    if (!donationId) return;
+
+    const fetchDonationDetails = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/donations/${donationId}/details`);
+        const data = await response.json();
+        if (response.ok) {
+          setDonationDetails(data);
+        }
+      } catch (error) {
+        console.error("Error fetching donation details:", error);
+      }
+    };
+
+    fetchDonationDetails();
+  }, [donationId]);
 
   useEffect(() => {
     if (map) return;
@@ -33,39 +125,25 @@ const BaseMap = ({ donationId, restaurantLocation }) => {
     }).addTo(leafletMap);
     setMap(leafletMap);
 
-    // ✅ Add restaurant marker immediately
-    if (restaurantLocation) {
-      const restoMarker = L.marker(
-        [restaurantLocation.lat, restaurantLocation.lng],
-        {
-          icon: L.icon({
-            iconUrl: "/photos/red.png",
-            iconSize: [30, 30],
-          }),
-        }
-      ).addTo(leafletMap);
-      restoMarker.bindPopup("🍽️ Restaurant Location").openPopup();
-
-      leafletMap.setView(
-        [restaurantLocation.lat, restaurantLocation.lng],
-        12
-      );
-    }
-
     // ✅ Initialize Socket.IO
-    socket.current = io("http://localhost:3000"); // <--- use backend port!
-    socket.current.emit("join-donation-room", donationId);
+    socket.current = io("http://localhost:3000");
+    if (donationId) {
+      socket.current.emit("join-donation-room", donationId);
+    }
 
     // 🏠 NGO accepts donation
     socket.current.on("donation-accepted", (data) => {
       if (data.donationId === donationId && data.ngoLocation) {
-        const ngoMarker = L.marker(
-          [data.ngoLocation.lat, data.ngoLocation.lng],
-          {
-            icon: L.icon({ iconUrl: "/photos/green.png", iconSize: [30, 30] }),
-          }
-        ).addTo(leafletMap);
-        ngoMarker.bindPopup("🏠 NGO Location");
+        if (!ngoMarkerRef.current) {
+          ngoMarkerRef.current = L.marker(
+            [data.ngoLocation.lat, data.ngoLocation.lng],
+            {
+              icon: L.icon({ iconUrl: "/photos/green.png", iconSize: [30, 30] }),
+            }
+          ).addTo(leafletMap);
+          ngoMarkerRef.current.bindPopup("🏠 NGO Location").openPopup();
+          updateRoute(leafletMap);
+        }
       }
     });
 
@@ -86,6 +164,8 @@ const BaseMap = ({ donationId, restaurantLocation }) => {
             iconSize: [30, 30],
           }),
         }).addTo(leafletMap);
+        volunteerMarkerRef.current.bindPopup("🚴 Volunteer Location");
+        updateRoute(leafletMap);
       } else {
         volunteerMarkerRef.current.setLatLng([data.lat, data.lng]);
       }
@@ -97,32 +177,66 @@ const BaseMap = ({ donationId, restaurantLocation }) => {
       socket.current?.disconnect();
       leafletMap.remove();
     };
-  }, [donationId, restaurantLocation]);
+  }, [donationId]);
 
-  // 🗺️ Draw route between restaurant, NGO, and volunteer
-  const drawRoute = (leafletMap, data) => {
-    const { restaurant, ngo, volunteer } = data;
-    const waypoints = [
-      L.latLng(restaurant.lat, restaurant.lng),
-      L.latLng(ngo.lat, ngo.lng),
-    ];
+  // Add markers when data is available
+  useEffect(() => {
+    if (!map || !donationDetails) return;
 
-    if (volunteer) {
-      waypoints.unshift(L.latLng(volunteer.lat, volunteer.lng));
+    // Add restaurant marker
+    if (donationDetails.restaurant && !restaurantMarkerRef.current) {
+      restaurantMarkerRef.current = L.marker(
+        [donationDetails.restaurant.lat, donationDetails.restaurant.lng],
+        {
+          icon: L.icon({
+            iconUrl: "/photos/red.png",
+            iconSize: [30, 30],
+          }),
+        }
+      ).addTo(map);
+      restaurantMarkerRef.current.bindPopup(`🍽️ ${donationDetails.restaurant.name || 'Restaurant'}`).openPopup();
+      
+      // Center map on restaurant
+      map.setView(
+        [donationDetails.restaurant.lat, donationDetails.restaurant.lng],
+        12
+      );
     }
 
-    if (routingControlRef.current) {
-      routingControlRef.current.setWaypoints(waypoints);
-    } else {
-      routingControlRef.current = L.Routing.control({
-        waypoints,
-        routeWhileDragging: false,
-        addWaypoints: false,
-        createMarker: () => null,
-        lineOptions: { styles: [{ color: "blue", weight: 5 }] },
-      }).addTo(leafletMap);
+    // Add NGO marker if available
+    if (donationDetails.ngo && !ngoMarkerRef.current) {
+      ngoMarkerRef.current = L.marker(
+        [donationDetails.ngo.lat, donationDetails.ngo.lng],
+        {
+          icon: L.icon({ iconUrl: "/photos/green.png", iconSize: [30, 30] }),
+        }
+      ).addTo(map);
+      ngoMarkerRef.current.bindPopup(`🏠 ${donationDetails.ngo.name || 'NGO'}`);
+      
+      // Update route if both markers exist
+      updateRoute(map);
     }
-  };
+
+    // If volunteer role, start tracking volunteer location
+    if (role === "volunteer" && navigator.geolocation) {
+      const watchId = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          if (socket.current && donationId) {
+            socket.current.emit("volunteer-location", {
+              donationId,
+              lat: latitude,
+              lng: longitude,
+            });
+          }
+        },
+        (error) => console.error("Geolocation error:", error),
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+
+      return () => navigator.geolocation.clearWatch(watchId);
+    }
+  }, [map, donationDetails, role, donationId]);
 
   return (
     <div
