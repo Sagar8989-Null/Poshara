@@ -3,6 +3,10 @@ import '../CSS/RestoDash.css';
 import { Menu, X } from 'lucide-react';
 import OCR from '../components/OCR';
 import RestoDashMap from '../components/RestoDashMap';
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3000"); // Adjust backend URL if different
+
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ formData, handleChange, handleOCRExtractedData, handleSubmit, handleCancel, isOpen, onClose }) {
@@ -221,6 +225,33 @@ function RestoDash() {
   const [uploadedImage, setUploadedImage] = useState('');
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+ // ✅ Listen for live volunteer updates based on the selected donation
+useEffect(() => {
+  if (!selectedDonationId) return; // Only join when a donation is selected
+
+  socket.emit("join-donation-room", selectedDonationId);
+
+  socket.on("volunteer-location", (data) => {
+    // Broadcast this update globally for map to handle
+    window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
+  });
+
+  return () => {
+    socket.off("volunteer-location");
+  };
+}, [selectedDonationId]);
+
+useEffect(() => {
+  const handleVolunteerUpdate = (e) => {
+    const { latitude, longitude } = e.detail;
+    setVolunteerMarker({ lat: latitude, lng: longitude });
+  };
+
+  window.addEventListener("volunteer-location-update", handleVolunteerUpdate);
+  return () => window.removeEventListener("volunteer-location-update", handleVolunteerUpdate);
+}, []);
+
 
   // Load user info
   useEffect(() => {

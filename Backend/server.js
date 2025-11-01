@@ -343,13 +343,15 @@ app.get("/api/donations/:id/details", async (req, res) => {
     let volunteerLocation = null;
     if (donationData.volunteer_id) {
       const [vol] = await db.query(
-        "SELECT latitude, longitude, name FROM volunteers WHERE volunteer_id = ?",
+        `SELECT u.name 
+   FROM volunteers v
+   JOIN users u ON v.volunteer_id = u.user_id
+   WHERE v.volunteer_id = ?`,
         [donationData.volunteer_id]
       );
+
       if (vol.length > 0)
         volunteerLocation = {
-          lat: vol[0].latitude,
-          lng: vol[0].longitude,
           name: vol[0].name,
         };
     }
