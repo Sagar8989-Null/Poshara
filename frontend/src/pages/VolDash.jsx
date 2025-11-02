@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import "../CSS/VolDash.css";
 import { CheckCircle, MapPin, Truck, Clock, Loader2, Menu, X } from "lucide-react";
 import VolunteerDashMap from "../components/VolunteerDashMap";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3000"); // ✅ Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ isOpen, onClose }) {
@@ -18,7 +21,6 @@ function Sidebar({ isOpen, onClose }) {
   return (
     <>
       {isOpen && <div className="overlay md:hidden" onClick={onClose}></div>}
-
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
           <h2>Information</h2>
@@ -29,8 +31,10 @@ function Sidebar({ isOpen, onClose }) {
 
         <div className="filters-container">
           <div className="filter-card">
-            <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem', fontWeight: 600 }}>Volunteer Dashboard</h3>
-            <p style={{ margin: 0, color: '#6b7280', fontSize: '0.9rem' }}>
+            <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontWeight: 600 }}>
+              Volunteer Dashboard
+            </h3>
+            <p style={{ margin: 0, color: "#6b7280", fontSize: "0.9rem" }}>
               Accept deliveries and help connect food donations to those in need.
             </p>
           </div>
@@ -48,13 +52,28 @@ function DonationItem({ donation, volunteerId, onAccept, onDeliver, onSelect }) 
         <h3>{donation.food_name}</h3>
         <p>Variety: {donation.food_variety}</p>
         <p>Category: {donation.food_category}</p>
-        <p>Quantity: {donation.quantity} {donation.unit}</p>
-        <p><Clock size={14} style={{ display: 'inline', marginRight: '0.25rem' }} /> Expires: {new Date(donation.expiry_time).toLocaleString()}</p>
-        <p>Status: <strong>{donation.status}</strong></p>
+        <p>
+          Quantity: {donation.quantity} {donation.unit}
+        </p>
+        <p>
+          <Clock size={14} style={{ display: "inline", marginRight: "0.25rem" }} />{" "}
+          Expires: {new Date(donation.expiry_time).toLocaleString()}
+        </p>
+        <p>
+          Status: <strong>{donation.status}</strong>
+        </p>
       </div>
 
       <div className="donation-actions">
-        <span className={`status ${donation.status === "accepted" || donation.status === "picked_up" || donation.status === "delivered" ? "accepted" : "waiting"}`}>
+        <span
+          className={`status ${
+            donation.status === "accepted" ||
+            donation.status === "picked_up" ||
+            donation.status === "delivered"
+              ? "accepted"
+              : "waiting"
+          }`}
+        >
           {donation.status}
         </span>
 
@@ -66,21 +85,30 @@ function DonationItem({ donation, volunteerId, onAccept, onDeliver, onSelect }) 
               onAccept(donation.donation_id);
             }}
           >
-            <Truck size={16} style={{ display: 'inline', marginRight: '0.25rem' }} /> Accept for Delivery
+            <Truck
+              size={16}
+              style={{ display: "inline", marginRight: "0.25rem" }}
+            />{" "}
+            Accept for Delivery
           </button>
         )}
 
-        {donation.status === "picked_up" && donation.volunteer_id === volunteerId && (
-          <button
-            className="deliver-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeliver(donation.donation_id);
-            }}
-          >
-            <CheckCircle size={16} style={{ display: 'inline', marginRight: '0.25rem' }} /> Mark as Delivered
-          </button>
-        )}
+        {donation.status === "picked_up" &&
+          donation.volunteer_id === volunteerId && (
+            <button
+              className="deliver-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeliver(donation.donation_id);
+              }}
+            >
+              <CheckCircle
+                size={16}
+                style={{ display: "inline", marginRight: "0.25rem" }}
+              />{" "}
+              Mark as Delivered
+            </button>
+          )}
 
         <button
           className="map-btn"
@@ -89,7 +117,11 @@ function DonationItem({ donation, volunteerId, onAccept, onDeliver, onSelect }) 
             onSelect(donation.donation_id);
           }}
         >
-          <MapPin size={16} style={{ display: 'inline', marginRight: '0.25rem' }} /> View on Map
+          <MapPin
+            size={16}
+            style={{ display: "inline", marginRight: "0.25rem" }}
+          />{" "}
+          View on Map
         </button>
       </div>
     </div>
@@ -97,7 +129,17 @@ function DonationItem({ donation, volunteerId, onAccept, onDeliver, onSelect }) 
 }
 
 /* ------------------------------- Main Section ------------------------------ */
-function MainContent({ donations, loading, volunteerId, onMenuClick, onAccept, onDeliver, user, selectedDonationId, onSelectDonation }) {
+function MainContent({
+  donations,
+  loading,
+  volunteerId,
+  onMenuClick,
+  onAccept,
+  onDeliver,
+  user,
+  selectedDonationId,
+  onSelectDonation,
+}) {
   return (
     <main className="main-content">
       <div className="header">
@@ -109,8 +151,12 @@ function MainContent({ donations, loading, volunteerId, onMenuClick, onAccept, o
         <div className="user-profile-section">
           <p className="welcome-text">Welcome, {user.name}!</p>
           <div className="user-details">
-            <p><strong>Role:</strong> {user.role}</p>
-            <p><strong>User ID:</strong> {user.user_id}</p>
+            <p>
+              <strong>Role:</strong> {user.role}
+            </p>
+            <p>
+              <strong>User ID:</strong> {user.user_id}
+            </p>
           </div>
         </div>
       )}
@@ -120,7 +166,13 @@ function MainContent({ donations, loading, volunteerId, onMenuClick, onAccept, o
       <section className="donations-section">
         <div className="donations-list">
           {loading ? (
-            <div className="loading"><Loader2 className="spinner" style={{ animation: 'spin 1s linear infinite', display: 'inline-block' }} /> Loading...</div>
+            <div className="loading">
+              <Loader2
+                className="spinner"
+                style={{ animation: "spin 1s linear infinite", display: "inline-block" }}
+              />{" "}
+              Loading...
+            </div>
           ) : donations.length > 0 ? (
             donations.map((donation) => (
               <DonationItem
@@ -165,13 +217,15 @@ export default function VolDash() {
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  // Load user
+  const volunteerId = user?.user_id;
+
+  // ✅ Load user data
   useEffect(() => {
     const userData = localStorage.getItem("user");
     if (userData) setUser(JSON.parse(userData));
   }, []);
 
-  // Fetch donations accepted by NGOs (available for pickup)
+  // ✅ Fetch donations
   const fetchDonations = async () => {
     try {
       setLoading(true);
@@ -190,9 +244,28 @@ export default function VolDash() {
     fetchDonations();
   }, []);
 
-  const volunteerId = user?.user_id;
+  // ✅ Live location streaming
+  useEffect(() => {
+    if (!user || !selectedDonationId) return;
 
-  // Accept for delivery
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        socket.emit("volunteer-location", {
+          donationId: selectedDonationId,
+          volunteerId: user.user_id,
+          latitude,
+          longitude,
+        });
+      },
+      (err) => console.error("Location error:", err),
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [selectedDonationId, user]);
+
+  // ✅ Accept donation
   const handleAccept = async (id) => {
     try {
       if (!volunteerId) return alert("Please log in first!");
@@ -210,10 +283,12 @@ export default function VolDash() {
     }
   };
 
-  // Mark as delivered
+  // ✅ Mark as delivered
   const handleDeliver = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/volunteer/deliver/${id}`, { method: "PUT" });
+      const res = await fetch(`http://localhost:5000/api/volunteer/deliver/${id}`, {
+        method: "PUT",
+      });
       if (!res.ok) throw new Error("Failed to update delivery");
       alert("🎉 Marked as delivered!");
       fetchDonations();
@@ -226,10 +301,7 @@ export default function VolDash() {
   return (
     <div className="vol-container">
       <div className="content-wrapper">
-        <Sidebar
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
         <MainContent
           donations={donations}
           loading={loading}

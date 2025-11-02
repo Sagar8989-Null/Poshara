@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import "../CSS/NgoDash.css";
 import { Menu, Leaf, Box, Users, X } from "lucide-react";
 import NgoDashMap from "../components/NgoDashMap";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:3000"); // Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
@@ -260,6 +263,33 @@ export default function NgoDash() {
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
+
+useEffect(() => {
+  if (!selectedDonationId) return; // Wait until a donation is selected
+
+  // Join the live location room
+  socket.emit("join-donation-room", selectedDonationId);
+
+  // Listen for volunteer location updates
+  socket.on("volunteer-location", (data) => {
+    // Forward the live data to your map component via a custom event or state
+    window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
+  });
+
+  return () => {
+    socket.off("volunteer-location");
+  };
+}, [selectedDonationId]);
+
+useEffect(() => {
+  const handleLocationUpdate = (e) => {
+    const { latitude, longitude } = e.detail;
+    setVolunteerMarker({ lat: latitude, lng: longitude }); // Update map marker here
+  };
+
+  window.addEventListener("volunteer-location-update", handleLocationUpdate);
+  return () => window.removeEventListener("volunteer-location-update", handleLocationUpdate);
+}, []);
 
   // Load user info
   useEffect(() => {
