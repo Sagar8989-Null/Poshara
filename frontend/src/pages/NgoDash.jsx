@@ -39,29 +39,29 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
         </div>
 
         <div className="filters-container">
-          {/* <div className="filter-card">
+          <div className="filter-card">
             <div className="filter-header">
-              <label htmlFor="distance">
-                <Ruler className="icon purple" />
-                Distance
-              </label>
-              <span className="distance-value">{distance} km</span>
+              <label htmlFor="distance">Distance</label>
+              <span className="distance-value">{filters.distance} km</span>
             </div>
+
             <input
               type="range"
               id="distance"
               name="distance"
               min="0"
               max="50"
-              value={distance}
+              value={filters.distance}
+              step="1"
               onChange={handleInputChange}
               className="range-slider"
             />
-          </div> */}
+          </div>
+
           {/* Food Variety */}
           <div className="filter-card">
             <span className="filter-title">
-              <Leaf className="icon green" />
+              <Leaf className="icon green" style={{ marginRight: '10px' }} />
               Food Variety
             </span>
             <div className="toggle-group">
@@ -83,7 +83,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
           {/* Food Category */}
           <div className="filter-card">
             <span className="filter-title">
-              <Box className="icon blue" />
+              <Box className="icon blue" style={{ marginRight: '10px' }} />
               Food Category
             </span>
             <div className="toggle-group">
@@ -103,7 +103,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
           </div>
 
           {/* Minimum Servings */}
-          <div className="filter-card">
+          {/* <div className="filter-card">
             <label htmlFor="servings" className="filter-title">
               <Users className="icon yellow" />
               Minimum Servings
@@ -118,7 +118,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
               onChange={handleInputChange}
               className="number-input"
             />
-          </div>
+          </div> */}
 
           <div className="apply-btn-container">
             <button onClick={applyFilters} className="apply-btn">
@@ -133,6 +133,8 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
 
 /* --------------------------- Donation Item Card --------------------------- */
 function DonationItem({ donation, onAccept, onSelect }) {
+
+  
   const statusClass =
     donation.status === "picked_up" || donation.status === "accepted"
       ? "accepted"
@@ -144,10 +146,19 @@ function DonationItem({ donation, onAccept, onSelect }) {
         <h3>{donation.food_name}</h3>
         <p>Variety: {donation.food_variety}</p>
         <p>Category: {donation.food_category}</p>
+        <p>Quantity: {donation.quantity} {donation.unit}</p>
+        <p>Distance: {donation.distance ? `${donation.distance} km` : "N/A"}</p>
         <p>
-          Quantity: {donation.quantity} {donation.unit}
+          Expires:{" "}
+          {new Date(donation.expiry_time).toLocaleString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })}
         </p>
-        <p>Expires: {new Date(donation.expiry_time).toLocaleString()}</p>
       </div>
 
       <div className="donation-actions">
@@ -240,10 +251,12 @@ function Footer() {
 export default function NgoDash() {
   const [user, setUser] = useState(null);
   const [filters, setFilters] = useState({
+    distance: 10, // default radius in km
     foodVariety: "Veg",
     foodCategory: "Cooked",
     servings: 1,
   });
+
   const [donations, setDonations] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
@@ -251,7 +264,11 @@ export default function NgoDash() {
   // Load user info
   useEffect(() => {
     const userData = localStorage.getItem("user");
-    if (userData) setUser(JSON.parse(userData));
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      // console.log("🧭 Loaded user data:", parsed);
+      setUser(parsed);
+    }
   }, []);
 
   // // Fetch donations from backend
@@ -278,36 +295,62 @@ export default function NgoDash() {
   //   return () => clearInterval(interval);
   // }, [filters]);
 
+
+  // 🧮 Filter helper (moved outside useEffect)
+  const filterByDistance = (donations, maxDistance) => {
+    return donations.filter((donation) => {
+      const distance = donation.distance || 0;
+      return distance <= maxDistance;
+    });
+  };
+
   useEffect(() => {
-    // fetchDonations();
     const interval = setInterval(fetchDonations, 3000);
     return () => clearInterval(interval);
-  }, [filters]);
+  }, [filters, user]);
 
   const fetchDonations = async () => {
+    if (!user) return;
 
     try {
       const query = new URLSearchParams({
-        food_variety: filters.foodVariety,
-        food_category: filters.foodCategory,
-        min_servings: filters.servings,
+        food_variety: filters.foodVariety || "",
+        food_category: filters.foodCategory || "",
+        min_servings: filters.servings || 0,
+        ngo_lat: user.latitude,
+        ngo_lon: user.longitude,
       }).toString();
 
+      // Fetch both available and accepted
       const [availableRes, acceptedRes] = await Promise.all([
         fetch(`http://localhost:5000/api/donations/available?${query}`),
-        fetch("http://localhost:5000/api/donations/accepted"),
+        fetch(`http://localhost:5000/api/donations/accepted?ngo_lat=${user.latitude}&ngo_lon=${user.longitude}`),
       ]);
 
       const availableData = await availableRes.json();
       const acceptedData = await acceptedRes.json();
 
-      // 🧩 Merge both
-      const merged = [...availableData, ...acceptedData];
+      // Sort available donations by distance ascending
+      availableData.sort((a, b) => {
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance - b.distance;
+      });
+
+      // ✅ Apply distance filter ONLY to available donations
+      const filteredAvailable = availableData.filter(
+        (d) => d.distance != null && d.distance <= filters.distance
+      );
+
+      // ✅ Merge filtered available + all accepted (kept always)
+      const merged = [...filteredAvailable, ...acceptedData];
+
       setDonations(merged);
     } catch (err) {
       console.error("Error fetching donations:", err);
     }
   };
+
 
   // Accept donation
   const handleAccept = async (donationId) => {
@@ -329,9 +372,16 @@ export default function NgoDash() {
 
   // Apply filters
   const applyFilters = () => {
-    fetchDonations();
+    fetchDonations().then((data) => {
+      if (data) {
+        const withinRadius = filterByDistance(data, filters.distance);
+        setDonations(withinRadius);
+      }
+    });
     setIsSidebarOpen(false);
   };
+
+
 
   return (
     <div className="ngo-container">

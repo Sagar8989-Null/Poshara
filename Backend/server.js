@@ -4,12 +4,100 @@ import mysql from "mysql2/promise";
 import cors from "cors";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
+import fetch from "node-fetch";
+
 
 dotenv.config();
+
+
+// ✅ Fetch driving distance from OSRM (real road distance)
+const getDrivingDistance = async (startLat, startLng, endLat, endLng) => {
+  try {
+    const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=false`;
+
+    const res = await fetch(url);
+
+    // ✅ Check if response is actually JSON
+    const text = await res.text();
+    if (!res.ok) {
+      console.error(`❌ OSRM error: ${res.status} ${res.statusText}`);
+      return null;
+    }
+
+    // ✅ If the response starts with '<', it's HTML (an error page)
+    if (text.trim().startsWith("<")) {
+      console.error("❌ OSRM returned HTML instead of JSON. The public server might be down.");
+      return null;
+    }
+
+    // ✅ Parse JSON safely
+    const data = JSON.parse(text);
+
+    if (data?.routes?.length) {
+      const distanceInKm = data.routes[0].distance / 1000;
+      return distanceInKm.toFixed(2);
+    }
+    // if (data.routes && data.routes.length > 0) {
+    //   const distanceInKm = data.routes[0].distance / 1000; // convert meters → km
+    //   // console.log(
+    //   // //   `🛰️ OSRM distance from (${startLat}, ${startLng}) → (${endLat}, ${endLng}):`,
+    //   // //   (data.routes && data.routes.length > 0) ? (data.routes[0].distance / 1000).toFixed(2) + " km" : "No route"
+    //   // // );
+
+    //   return distanceInKm.toFixed(2);
+    // }
+    return null;
+  } catch (err) {
+    console.error("Error fetching OSRM distance:", err);
+    return null;
+  }
+};
+
+
+// 🧠 In-memory cache for donation distances (reset when server restarts)
+const distanceCache = new Map();
+
+// ✅ Helper: Generate unique key per NGO–Restaurant pair
+function makeCacheKey(ngoLat, ngoLon, restLat, restLon) {
+  return `${ngoLat},${ngoLon}-${restLat},${restLon}`;
+}
+
+// ✅ Enhanced version of getDrivingDistance() with caching + retry limit
+async function getCachedDistance(startLat, startLng, endLat, endLng) {
+  const key = makeCacheKey(startLat, startLng, endLat, endLng);
+
+  // 1️⃣ If cached (including N/A), just return it
+  if (distanceCache.has(key)) return distanceCache.get(key);
+
+  // 2️⃣ Limit concurrent new OSRM requests to 3 max
+  if (getCachedDistance.activeRequests >= 3) {
+    // If too many requests happening, skip and mark as pending or N/A
+    return "N/A";
+  }
+
+  getCachedDistance.activeRequests++;
+  let distance = null;
+
+  try {
+    distance = await getDrivingDistance(startLat, startLng, endLat, endLng);
+  } catch (err) {
+    console.error("OSRM fetch failed:", err);
+    distance = null;
+  } finally {
+    getCachedDistance.activeRequests--;
+  }
+
+  // 3️⃣ Store result (even if N/A) so it’s not requested again
+  distanceCache.set(key, distance ?? "N/A");
+  return distance ?? "N/A";
+}
+getCachedDistance.activeRequests = 0;
+
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 
 // ✅ MySQL promise pool
 const db = await mysql.createPool({
@@ -229,34 +317,85 @@ app.delete("/api/donations/:id", async (req, res) => {
   }
 });
 
-// ✅ GET ALL AVAILABLE DONATIONS (for NGO dashboard)
+// ✅ GET ALL AVAILABLE DONATIONS (with real distance using restaurant_id)
 app.get("/api/donations/available", async (req, res) => {
   try {
-    const { food_variety, food_category, min_servings } = req.query;
-    let sql = `SELECT * FROM donations WHERE status = 'available'`;
+    const { food_variety, food_category, min_servings, ngo_lat, ngo_lon } = req.query;
+
+    if (!ngo_lat || !ngo_lon) {
+      return res.status(400).json({ error: "NGO coordinates (ngo_lat, ngo_lon) are required" });
+    }
+
+    // Step 1: Base SQL (JOIN donations with restaurants)
+    let sql = `
+      SELECT 
+        d.donation_id,
+        d.food_name,
+        d.food_variety,
+        d.food_category,
+        d.quantity,
+        d.unit,
+        d.expiry_time,
+        d.status,
+        d.restaurant_id,
+        r.name AS restaurant_name,
+        r.latitude AS restaurant_lat,
+        r.longitude AS restaurant_lon
+      FROM donations d
+      JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+      WHERE d.status = 'available'
+    `;
+
     const params = [];
 
+    // Step 2: Apply optional filters
     if (food_variety) {
-      sql += " AND food_variety = ?";
+      sql += " AND d.food_variety = ?";
       params.push(food_variety);
     }
     if (food_category) {
-      sql += " AND food_category = ?";
+      sql += " AND d.food_category = ?";
       params.push(food_category);
     }
     if (min_servings) {
-      sql += " AND quantity >= ?";
+      sql += " AND d.quantity >= ?";
       params.push(Number(min_servings));
     }
 
-    sql += " ORDER BY created_at DESC";
+    // Step 3: Run query
     const [rows] = await db.query(sql, params);
-    res.json(rows);
+
+    // Step 4: Fetch real driving distance (cached and limited)
+    const donationsWithDistance = await Promise.all(
+      rows.map(async (d) => {
+        const distance = await getCachedDistance(
+          parseFloat(ngo_lat),
+          parseFloat(ngo_lon),
+          parseFloat(d.restaurant_lat),
+          parseFloat(d.restaurant_lon)
+        );
+        return { ...d, distance };
+      })
+    );
+
+    // Step 5: Sort by nearest first
+    donationsWithDistance.sort((a, b) => {
+      if (a.distance === "N/A") return 1;
+      if (b.distance === "N/A") return -1;
+      return a.distance - b.distance;
+    });
+
+    // console.log("🧭 Available Donations with distance:", donationsWithDistance);
+
+
+    res.json(donationsWithDistance);
   } catch (error) {
-    console.error("Error fetching available donations:", error);
+    console.error("❌ Error fetching available donations:", error);
     res.status(500).json({ error: "Failed to fetch available donations" });
   }
 });
+
+
 
 // ✅ NGO ACCEPTS DONATION
 app.put("/api/donations/:id/accept", async (req, res) => {
@@ -281,16 +420,61 @@ app.put("/api/donations/:id/accept", async (req, res) => {
   }
 });
 
-// ✅ Fetch all donations accepted by NGOs (for volunteers)
+// ✅ GET ALL ACCEPTED DONATIONS (with OSRM driving distance)
 app.get("/api/donations/accepted", async (req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT * FROM donations WHERE status = 'accepted'"
+    const { ngo_lat, ngo_lon } = req.query;
+
+    if (!ngo_lat || !ngo_lon) {
+      return res.status(400).json({ error: "NGO coordinates (ngo_lat, ngo_lon) are required" });
+    }
+
+    // Step 1: Get all accepted donations
+    const sql = `
+      SELECT 
+        d.donation_id,
+        d.food_name,
+        d.food_variety,
+        d.food_category,
+        d.quantity,
+        d.unit,
+        d.expiry_time,
+        d.status,
+        d.restaurant_id,
+        r.name AS restaurant_name,
+        r.latitude AS restaurant_lat,
+        r.longitude AS restaurant_lon
+      FROM donations d
+      JOIN restaurants r ON d.restaurant_id = r.restaurant_id
+      WHERE d.status = 'accepted'
+    `;
+    const [rows] = await db.query(sql);
+
+    // Step 2: Fetch OSRM distances
+    const results = await Promise.all(
+      rows.map(async (donation) => {
+        const distance = await getCachedDistance(
+          parseFloat(ngo_lat),
+          parseFloat(ngo_lon),
+          parseFloat(donation.restaurant_lat),
+          parseFloat(donation.restaurant_lon)
+        );
+        return { ...donation, distance };
+      })
     );
-    res.json(rows);
+
+
+    // Step 3: Sort by nearest first
+    results.sort((a, b) => {
+      if (a.distance === "N/A") return 1;
+      if (b.distance === "N/A") return -1;
+      return a.distance - b.distance;
+    });
+
+    res.json(results);
   } catch (error) {
-    console.error("Error fetching picked donations:", error);
-    res.status(500).json({ error: "Failed to fetch picked donations" });
+    console.error("❌ Error fetching accepted donations:", error);
+    res.status(500).json({ error: "Failed to fetch accepted donations" });
   }
 });
 
@@ -303,7 +487,8 @@ app.get("/api/donations/ngo/:ngo_id", async (req, res) => {
       [ngo_id]
     );
     res.json(rows);
-  } catch (error) {s
+  } catch (error) {
+    s
     console.error("Error fetching NGO donations:", error);
     res.status(500).json({ error: "Failed to fetch NGO donations" });
   }
@@ -358,10 +543,10 @@ app.get("/api/donations/:id/details", async (req, res) => {
       donation: donationData,
       restaurant: restaurant.length
         ? {
-            lat: restaurant[0].latitude,
-            lng: restaurant[0].longitude,
-            name: restaurant[0].name,
-          }
+          lat: restaurant[0].latitude,
+          lng: restaurant[0].longitude,
+          name: restaurant[0].name,
+        }
         : null,
       ngo: ngoLocation,
       volunteer: volunteerLocation,
