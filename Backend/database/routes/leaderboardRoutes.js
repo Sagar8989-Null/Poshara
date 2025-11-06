@@ -1,3 +1,4 @@
+// backend/routes/leaderboardRoutes.js
 import express from "express";
 import { getLeaderboard } from "../controllers/leaderboardController.js";
 

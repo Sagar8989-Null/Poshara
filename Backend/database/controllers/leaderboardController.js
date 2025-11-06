@@ -1,4 +1,5 @@
-import { db } from "../config/db.js";
+// backend/controllers/leaderboardController.js
+import { db } from "../db.js";
 
 export const getLeaderboard = async (req, res) => {
   const sql = `
@@ -19,3 +20,4 @@ export const getLeaderboard = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
