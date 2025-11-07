@@ -7,7 +7,7 @@ import io from "socket.io-client";
 const socket = io("http://localhost:3000"); // ✅ Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
-function Sidebar({ isOpen, onClose }) {
+function Sidebar({ isOpen, onClose, user }) {
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
@@ -23,13 +23,26 @@ function Sidebar({ isOpen, onClose }) {
       {isOpen && <div className="overlay md:hidden" onClick={onClose}></div>}
       <aside className={`sidebar ${isOpen ? "open" : ""}`}>
         <div className="sidebar-header">
-          <h2>Information</h2>
+          {/* <h2>Information</h2> */}
           <button onClick={onClose} className="close-btn md:hidden">
             <X className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="filters-container">
+        {user &&
+          <div className="profilecontainer">
+            <div className="flex">
+            <div className="profilecircle"></div>
+            <h2>{user.name}</h2>
+            </div>
+            <button onClick={() => {
+              localStorage.removeItem("user");
+              window.location.reload();
+            }}>Logout</button>
+          </div>
+        }
+
+        {/* <div className="filters-container">
           <div className="filter-card">
             <h3 style={{ margin: "0 0 0.5rem 0", fontSize: "1rem", fontWeight: 600 }}>
               Volunteer Dashboard
@@ -38,7 +51,9 @@ function Sidebar({ isOpen, onClose }) {
               Accept deliveries and help connect food donations to those in need.
             </p>
           </div>
-        </div>
+        </div> */}
+
+
       </aside>
     </>
   );
@@ -66,17 +81,17 @@ function DonationItem({ donation, volunteerId, onAccept, onDeliver, onSelect }) 
 
       <div className="donation-actions">
         <span
-          className={`status ${
-            donation.status === "accepted" ||
+          className={`status ${donation.status === "accepted" ||
             donation.status === "picked_up" ||
             donation.status === "delivered"
-              ? "accepted"
-              : "waiting"
-          }`}
+            ? "accepted"
+            : "waiting"
+            }`}
         >
           {donation.status}
         </span>
 
+        {/* {donation.status === "available" && !donation.volunteer_id && ( */}
         {donation.status === "accepted" && !donation.volunteer_id && (
           <button
             className="accept-btn"
@@ -147,7 +162,7 @@ function MainContent({
         <h2>Volunteer Dashboard</h2>
       </div>
 
-      {user && (
+      {/* {user && (
         <div className="user-profile-section">
           <p className="welcome-text">Welcome, {user.name}!</p>
           <div className="user-details">
@@ -159,7 +174,7 @@ function MainContent({
             </p>
           </div>
         </div>
-      )}
+      )} */}
 
       <h3 className="section-title">Available Deliveries</h3>
 
@@ -301,7 +316,7 @@ export default function VolDash() {
   return (
     <div className="vol-container">
       <div className="content-wrapper">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} />
         <MainContent
           donations={donations}
           loading={loading}
