@@ -29,7 +29,7 @@ body {
   width: 100%;
   min-width: calc(var(--width) * var(--quantity));
   position: relative;
-      background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* ✨ Each testimonial block */
@@ -42,7 +42,8 @@ body {
   animation-delay: calc((60s / var(--quantity)) * (var(--position) - 1) - 60s) !important;
   transition: all 0.4s ease;
   cursor: pointer;
-
+  position: absolute;
+  backdrop-filter: blur(20px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -51,9 +52,9 @@ body {
   font-size: 0.95rem;
   font-weight: 500;
   border-radius: 14px;
-
-  background: #ffffff;
-  color: #333;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff00;
+  color: #ffffff;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
