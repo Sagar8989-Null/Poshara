@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import '../CSS/RestoDash.css';
+import { useNavigate } from "react-router-dom";
 import { Menu, X } from 'lucide-react';
 import OCR from '../components/OCR';
 import RestoDashMap from '../components/RestoDashMap';
 import io from "socket.io-client";
+import {
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar
+} from 'recharts';
+
 
 const socket = io("http://localhost:3000"); // Adjust backend URL if different
 
@@ -151,23 +156,80 @@ function DonationItem({ donation, onDelete, onSelect }) {
 }
 
 /* ------------------------------- Main Section ------------------------------ */
-function MainContent({ donations, onMenuClick, onDelete, user, selectedDonationId, onSelectDonation }) {
+function MainContent({ donations, deliveredStats, onMenuClick, onDelete, user, selectedDonationId, onSelectDonation, navigate }) {
   return (
     <main className="main-content">
       <div className="header">
-        <Menu className="menu-icon md:hidden" onClick={onMenuClick} />
-        <h2>Restaurant Dashboard</h2>
+        <div className='flex'>
+          <Menu className="menu-icon md:hidden" onClick={onMenuClick} />
+          <h2>Restaurant Dashboard</h2>
+        </div>
+
+        {user &&
+          <div className="profilecontainer">
+            <div className="flex">
+              <div className="profilecircle"></div>
+              <h2>{user.name}</h2>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  navigate("/");
+                }}
+              >
+                Logout
+              </button>
+
+            </div>
+          </div>
+        }
+
       </div>
 
-      {user && (
-        <div className="user-profile-section">
-          <p className="welcome-text">Welcome, {user.name}!</p>
-          <div className="user-details">
-            <p><strong>Role:</strong> {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</p>
-            <p><strong>User ID:</strong> {user.user_id}</p>
-          </div>
-        </div>
-      )}
+      <section className="graph-section">
+        <h3>Delivered Food Overview</h3>
+        {deliveredStats.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart
+              data={deliveredStats}
+              margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="delivered"
+                stroke="#4CAF50"
+                strokeWidth={3}
+                dot={{ r: 5, strokeWidth: 2, fill: "#4CAF50" }}
+                name="Delivered Donations"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="empty-text">No delivered donations yet.</p>
+        )}
+      </section>
+
+      {/* <section className="graph-section">
+        <h3>Delivered Food Overview</h3>
+        {deliveredStats.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={deliveredStats} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis allowDecimals={false} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="delivered" fill="#4CAF50" name="Delivered Donations" />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <p className="empty-text">No delivered donations yet.</p>
+        )}
+      </section> */}
 
       <h3 className="section-title">Your Donations</h3>
 
@@ -209,6 +271,7 @@ function Footer() {
 
 /* ------------------------------ Main Component ----------------------------- */
 function RestoDash() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     foodName: "",
@@ -225,32 +288,34 @@ function RestoDash() {
   const [uploadedImage, setUploadedImage] = useState('');
   const [selectedDonationId, setSelectedDonationId] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [deliveredStats, setDeliveredStats] = useState([]);
 
- // ✅ Listen for live volunteer updates based on the selected donation
-useEffect(() => {
-  if (!selectedDonationId) return; // Only join when a donation is selected
 
-  socket.emit("join-donation-room", selectedDonationId);
+  // ✅ Listen for live volunteer updates based on the selected donation
+  useEffect(() => {
+    if (!selectedDonationId) return; // Only join when a donation is selected
 
-  socket.on("volunteer-location", (data) => {
-    // Broadcast this update globally for map to handle
-    window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
-  });
+    socket.emit("join-donation-room", selectedDonationId);
 
-  return () => {
-    socket.off("volunteer-location");
-  };
-}, [selectedDonationId]);
+    socket.on("volunteer-location", (data) => {
+      // Broadcast this update globally for map to handle
+      window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
+    });
 
-useEffect(() => {
-  const handleVolunteerUpdate = (e) => {
-    const { latitude, longitude } = e.detail;
-    setVolunteerMarker({ lat: latitude, lng: longitude });
-  };
+    return () => {
+      socket.off("volunteer-location");
+    };
+  }, [selectedDonationId]);
 
-  window.addEventListener("volunteer-location-update", handleVolunteerUpdate);
-  return () => window.removeEventListener("volunteer-location-update", handleVolunteerUpdate);
-}, []);
+  useEffect(() => {
+    const handleVolunteerUpdate = (e) => {
+      const { latitude, longitude } = e.detail;
+      setVolunteerMarker({ lat: latitude, lng: longitude });
+    };
+
+    window.addEventListener("volunteer-location-update", handleVolunteerUpdate);
+    return () => window.removeEventListener("volunteer-location-update", handleVolunteerUpdate);
+  }, []);
 
 
   // Load user info
@@ -297,6 +362,23 @@ useEffect(() => {
         expiry: new Date(d.expiry_time).toLocaleString(),
       }));
       setDonations(formatted);
+
+      // ✅ Prepare data for graph (count delivered donations by date)
+      const delivered = data.filter(d => d.status?.toLowerCase() === "delivered");
+      const grouped = {};
+
+      delivered.forEach(d => {
+        const date = new Date(d.expiry_time || d.updated_at || d.created_at).toLocaleDateString();
+        grouped[date] = (grouped[date] || 0) + 1;
+      });
+
+      const chartData = Object.entries(grouped).map(([date, count]) => ({
+        date,
+        delivered: count
+      }));
+
+      console.log("Chart Data:", chartData); // 👈 Add this
+      setDeliveredStats(chartData);
     } catch (error) {
       console.error("Error fetching donations:", error);
     }
@@ -419,11 +501,13 @@ useEffect(() => {
         />
         <MainContent
           donations={donations}
+          deliveredStats={deliveredStats}
           onMenuClick={() => setIsSidebarOpen(true)}
           onDelete={handleDeleteDonation}
           user={user}
           selectedDonationId={selectedDonationId}
           onSelectDonation={setSelectedDonationId}
+          navigate={navigate}
         />
       </div>
       <Footer />

@@ -1,5 +1,5 @@
 .footer {
-  background-color: #66023c;
+  background-color: #66023C;
   color: #C3C870; 
   text-align: center;
   padding: 1.5rem 0;
@@ -14,12 +14,4 @@
   font-weight: 500;
 }
 
-.footer a {
-  color: #ffb6c1;
-  text-decoration: none;
-  transition: color 0.3s ease;
-}
 
-.footer a:hover {
-  color: #ffffff;
-}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 import '../CSS/Auth.css';
+import Navbar from "../components/Navbar";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,11 +30,11 @@ export default function Login() {
       if (res.ok) {
         setMessage("Login successful ✅");
         setMessageType("success");
-        
+
         // Store user data
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        
+
         // Redirect based on role
         setTimeout(() => {
           switch (data.user.role) {
@@ -64,79 +65,82 @@ export default function Login() {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
-        <div className="login-card">
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="login-form">
-            {/* Email Input */}
-            <div className="input-group">
-              <Mail className="input-icon" />
-              <input
-                type="email"
-                placeholder="Email Address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={isLoading}
-                className="input-field"
-                required
-              />
-            </div>
+    <>
+      <Navbar />
+      <div className="login-page">
+        <div className="login-container">
+          <div className="login-card">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="login-form">
+              {/* Email Input */}
+              <div className="input-group">
+                <Mail className="input-icon" />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isLoading}
+                  className="input-field"
+                  required
+                />
+              </div>
 
-            {/* Password Input */}
-            <div className="input-group">
-              <Lock className="input-icon" />
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={isLoading}
-                className="input-field password-field"
-                required
-              />
+              {/* Password Input */}
+              <div className="input-group">
+                <Lock className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  className="input-field password-field"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                  className="toggle-password"
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+
+              {/* Submit Button */}
               <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                type="submit"
                 disabled={isLoading}
-                className="toggle-password"
+                className={`submit-button ${isLoading ? 'loading' : ''}`}
               >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                {isLoading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Logging in...
+                  </>
+                ) : (
+                  "Login"
+                )}
               </button>
-            </div>
+            </form>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`submit-button ${isLoading ? 'loading' : ''}`}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Logging in...
-                </>
-              ) : (
-                "Login"
-              )}
-            </button>
-          </form>
+            {/* Message */}
+            {message && (
+              <div className={`message ${messageType === 'success' ? 'success' : 'error'}`}>
+                {messageType === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
+                <span>{message}</span>
+              </div>
+            )}
 
-          {/* Message */}
-          {message && (
-            <div className={`message ${messageType === 'success' ? 'success' : 'error'}`}>
-              {messageType === 'success' ? <CheckCircle size={18} /> : <AlertCircle size={18} />}
-              <span>{message}</span>
-            </div>
-          )}
-
-          {/* Signup Link */}
-          <p className="signup-link">
-            Don't have an account?{' '}
-            <a href="/signup">Signup</a>
-          </p>
+            {/* Signup Link */}
+            <p className="signup-link">
+              Don't have an account?{' '}
+              <a href="/signup">Signup</a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

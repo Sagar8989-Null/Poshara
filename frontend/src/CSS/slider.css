@@ -2,7 +2,7 @@ body {
   margin: 0;
   background-color: #fafafa;
   font-family: "Poppins", sans-serif;
-  color: #333;
+  color: #33333300;
 }
 
 .slider-container {
@@ -29,6 +29,7 @@ body {
   width: 100%;
   min-width: calc(var(--width) * var(--quantity));
   position: relative;
+      background: rgba(255, 255, 255, 0.1);
 }
 
 /* ✨ Each testimonial block */
@@ -54,7 +55,7 @@ body {
   background: #ffffff;
   color: #333;
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* 🌈 Hover interaction */
@@ -76,6 +77,7 @@ body {
   from {
     left: 100%;
   }
+
   to {
     left: calc(var(--width) * -1);
   }
@@ -91,6 +93,7 @@ body {
   from {
     left: calc(var(--width) * -1);
   }
+
   to {
     left: 100%;
   }

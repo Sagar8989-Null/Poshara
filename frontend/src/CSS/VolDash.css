@@ -2,6 +2,7 @@
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f9fafb;
+  color:black;
 }
 
 .vol-container {
@@ -63,8 +64,8 @@ body {
 }
 
 .profilecircle {
-  height: 50px;
-  width: 50px;
+  height: 40px;
+  width: 40px;
   background-color: black;
   border-radius: 100%;
 }
@@ -76,6 +77,14 @@ body {
   align-content: center;
   flex-wrap: wrap;
   gap : 0.7rem;
+}
+
+.profilecircle{
+  background-color: #66023C;
+}
+
+.profilecontainer button {
+  background-color: #66023C;
 }
 
 @media (min-width: 1024px) {
@@ -172,7 +181,6 @@ body {
   padding: 1rem;
   background: #f9fafb;
   border-radius: 8px;
-  border-left: 4px solid #7c3aed;
 }
 
 .welcome-text {
@@ -382,7 +390,7 @@ body {
   }
 }
 
-/* === FOOTER === */
+/* === FOOTER ===
 .footer {
   background: white;
   padding: 1rem;
@@ -390,7 +398,7 @@ body {
   font-size: 0.875rem;
   color: #6b7280;
   border-top: 1px solid #e5e7eb;
-}
+} */
 
 /* === FIX UNWANTED BLUR / OVERLAY BEHAVIOR === */
 body,

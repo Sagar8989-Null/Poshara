@@ -3,6 +3,7 @@ import "../CSS/NgoDash.css";
 import { Menu, Leaf, Box, Users, X } from "lucide-react";
 import NgoDashMap from "../components/NgoDashMap";
 import io from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 const socket = io("http://localhost:3000"); // Adjust if backend runs elsewhere
 
@@ -137,7 +138,7 @@ function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
 /* --------------------------- Donation Item Card --------------------------- */
 function DonationItem({ donation, onAccept, onSelect }) {
 
-  
+
   const statusClass =
     donation.status === "picked_up" || donation.status === "accepted"
       ? "accepted"
@@ -194,23 +195,32 @@ function DonationItem({ donation, onAccept, onSelect }) {
 }
 
 /* ------------------------------- Main Section ------------------------------ */
-function MainContent({ donations, onMenuClick, onAccept, user, selectedDonationId, onSelectDonation }) {
+function MainContent({ donations, onMenuClick, onAccept, user, selectedDonationId, onSelectDonation,navigate }) {
   return (
     <main className="main-content">
       <div className="header">
-        <Menu className="menu-icon md:hidden" onClick={onMenuClick} />
-        <h2 id="ngo-dash">NGO Dashboard</h2>
+        <div className="flex">
+          <Menu className="menu-icon md:hidden" onClick={onMenuClick} />
+          <h2 class="ngo-dash">NGO Dashboard</h2>
+        </div>
+        {user &&
+          <div className="profilecontainer">
+            <div className="flex">
+              <div className="profilecircle"></div>
+              <h2 className="ngo-dash">{user.name}</h2>
+              <button
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  navigate("/");
+                }}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        }
       </div>
 
-      {user && (
-        <div className="user-profile-section">
-          <p className="welcome-text">Welcome, {user.name}!</p>
-          <div className="user-details">
-            <p><strong>Role:</strong> {user.role}</p>
-            <p><strong>User ID:</strong> {user.user_id}</p>
-          </div>
-        </div>
-      )}
 
       <h3 className="section-title">Available Donations</h3>
 
@@ -252,6 +262,7 @@ function Footer() {
 
 /* ------------------------------ Main Component ----------------------------- */
 export default function NgoDash() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [filters, setFilters] = useState({
     distance: 10, // default radius in km
@@ -264,32 +275,32 @@ export default function NgoDash() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [selectedDonationId, setSelectedDonationId] = useState(null);
 
-useEffect(() => {
-  if (!selectedDonationId) return; // Wait until a donation is selected
+  useEffect(() => {
+    if (!selectedDonationId) return; // Wait until a donation is selected
 
-  // Join the live location room
-  socket.emit("join-donation-room", selectedDonationId);
+    // Join the live location room
+    socket.emit("join-donation-room", selectedDonationId);
 
-  // Listen for volunteer location updates
-  socket.on("volunteer-location", (data) => {
-    // Forward the live data to your map component via a custom event or state
-    window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
-  });
+    // Listen for volunteer location updates
+    socket.on("volunteer-location", (data) => {
+      // Forward the live data to your map component via a custom event or state
+      window.dispatchEvent(new CustomEvent("volunteer-location-update", { detail: data }));
+    });
 
-  return () => {
-    socket.off("volunteer-location");
-  };
-}, [selectedDonationId]);
+    return () => {
+      socket.off("volunteer-location");
+    };
+  }, [selectedDonationId]);
 
-useEffect(() => {
-  const handleLocationUpdate = (e) => {
-    const { latitude, longitude } = e.detail;
-    setVolunteerMarker({ lat: latitude, lng: longitude }); // Update map marker here
-  };
+  useEffect(() => {
+    const handleLocationUpdate = (e) => {
+      const { latitude, longitude } = e.detail;
+      setVolunteerMarker({ lat: latitude, lng: longitude }); // Update map marker here
+    };
 
-  window.addEventListener("volunteer-location-update", handleLocationUpdate);
-  return () => window.removeEventListener("volunteer-location-update", handleLocationUpdate);
-}, []);
+    window.addEventListener("volunteer-location-update", handleLocationUpdate);
+    return () => window.removeEventListener("volunteer-location-update", handleLocationUpdate);
+  }, []);
 
   // Load user info
   useEffect(() => {
@@ -430,6 +441,7 @@ useEffect(() => {
           user={user}
           selectedDonationId={selectedDonationId}
           onSelectDonation={setSelectedDonationId}
+          navigate={navigate}
         />
       </div>
       <Footer />

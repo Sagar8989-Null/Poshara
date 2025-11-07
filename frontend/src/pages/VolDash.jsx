@@ -3,11 +3,12 @@ import "../CSS/VolDash.css";
 import { CheckCircle, MapPin, Truck, Clock, Loader2, Menu, X } from "lucide-react";
 import VolunteerDashMap from "../components/VolunteerDashMap";
 import io from "socket.io-client";
+import { useNavigate } from "react-router-dom";
 
 const socket = io("http://localhost:3000"); // ✅ Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
-function Sidebar({ isOpen, onClose, user }) {
+function Sidebar({ isOpen, onClose, user, navigate }) {
   useEffect(() => {
     const handleEsc = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", handleEsc);
@@ -35,10 +36,14 @@ function Sidebar({ isOpen, onClose, user }) {
             <div className="profilecircle"></div>
             <h2>{user.name}</h2>
             </div>
-            <button onClick={() => {
-              localStorage.removeItem("user");
-              window.location.reload();
-            }}>Logout</button>
+            <button
+                onClick={() => {
+                  localStorage.removeItem("user");
+                  navigate("/");
+                }}
+              >
+                Logout
+              </button>
           </div>
         }
 
@@ -151,7 +156,6 @@ function MainContent({
   onMenuClick,
   onAccept,
   onDeliver,
-  user,
   selectedDonationId,
   onSelectDonation,
 }) {
@@ -226,6 +230,7 @@ function Footer() {
 
 /* ------------------------------ Main Component ----------------------------- */
 export default function VolDash() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -316,7 +321,8 @@ export default function VolDash() {
   return (
     <div className="vol-container">
       <div className="content-wrapper">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} />
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} user={user} navigate={navigate} />
+          
         <MainContent
           donations={donations}
           loading={loading}

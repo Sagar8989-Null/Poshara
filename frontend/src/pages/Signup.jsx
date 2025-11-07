@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, User, MapPin, Building2, AlertCircle, CheckCircle } from "lucide-react";
 import Addresslatlong from "../components/signupMap";
 import "../CSS/Auth.css";
+import Navbar from "../components/Navbar";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -76,149 +77,152 @@ function Signup() {
   };
 
   return (
-    <div className="signup-page">
-      <div className="signup-container">
-        <div className="signup-card">
-          <h2 className="signup-title">Create Account</h2>
+    <>
+    <Navbar/>
+      <div className="signup-page">
+        <div className="signup-container">
+          <div className="signup-card">
+            <h2 className="signup-title">Create Account</h2>
 
-          <form onSubmit={handleSubmit} className="signup-form">
-            {/* Name */}
-            <div className="input-group">
-              <User className="input-icon" />
-              <input
-                type="text"
-                name="name"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={handleChange}
-                className="input-field"
-                required
-                disabled={isLoading} />
-            </div>
+            <form onSubmit={handleSubmit} className="signup-form">
+              {/* Name */}
+              <div className="input-group">
+                <User className="input-icon" />
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full Name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                  disabled={isLoading} />
+              </div>
 
-            {/* Email */}
-            <div className="input-group">
-              <Mail className="input-icon" />
-              <input
-                type="email"
-                name="email"
-                placeholder="Email Address"
-                value={formData.email}
-                onChange={handleChange}
-                className="input-field"
-                required
-                disabled={isLoading} />
-            </div>
+              {/* Email */}
+              <div className="input-group">
+                <Mail className="input-icon" />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email Address"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                  disabled={isLoading} />
+              </div>
 
-            {/* Password */}
-            <div className="input-group">
-              <Lock className="input-icon" />
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="input-field password-field"
-                required
-                disabled={isLoading} />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="toggle-password"
-                disabled={isLoading}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
+              {/* Password */}
+              <div className="input-group">
+                <Lock className="input-icon" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input-field password-field"
+                  required
+                  disabled={isLoading} />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="toggle-password"
+                  disabled={isLoading}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
 
-            {/* Confirm Password */}
-            <div className="input-group">
-              <Lock className="input-icon" />
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="input-field password-field"
-                required
-                disabled={isLoading} />
-              <button
-                type="button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="toggle-password"
-                disabled={isLoading}
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
+              {/* Confirm Password */}
+              <div className="input-group">
+                <Lock className="input-icon" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="input-field password-field"
+                  required
+                  disabled={isLoading} />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="toggle-password"
+                  disabled={isLoading}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
 
-            {/* Role */}
-            <div className="input-group">
-              <Building2 className="input-icon" />
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-                className="select-field"
-                disabled={isLoading}
-              >
-                <option value="volunteer">Volunteer</option>
-                <option value="ngo">NGO</option>
-                <option value="restaurant">Restaurant</option>
-              </select>
-            </div>
+              {/* Role */}
+              <div className="input-group">
+                <Building2 className="input-icon" />
+                <select
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="select-field"
+                  disabled={isLoading}
+                >
+                  <option value="volunteer">Volunteer</option>
+                  <option value="ngo">NGO</option>
+                  <option value="restaurant">Restaurant</option>
+                </select>
+              </div>
 
-            {/* Map — show only if NGO or Restaurant */}
-{(formData.role === "ngo" || formData.role === "restaurant") && (
-  <div className="map-wrapper-signup">
-    <p className="map-label">Set your location:</p>
-    <Addresslatlong
-      onLocationChange={(lat, lng) =>
-        setFormData({ ...formData, latitude: lat, longitude: lng })
-      }
-    />
-  </div>
-)}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              className={`submit-button ${isLoading ? "loading" : ""}`}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <span className="spinner"></span>
-                  Creating Account...
-                </>
-              ) : (
-                "Create Account"
+              {/* Map — show only if NGO or Restaurant */}
+              {(formData.role === "ngo" || formData.role === "restaurant") && (
+                <div className="map-wrapper-signup">
+                  <p className="map-label">Set your location:</p>
+                  <Addresslatlong
+                    onLocationChange={(lat, lng) =>
+                      setFormData({ ...formData, latitude: lat, longitude: lng })
+                    }
+                  />
+                </div>
               )}
-            </button>
-          </form>
 
-          {/* Message */}
-          {message && (
-            <div className={`message ${messageType === "success" ? "success" : "error"}`}>
-              {messageType === "success" ? (
-                <CheckCircle size={18} className="message-icon" />
-              ) : (
-                <AlertCircle size={18} className="message-icon" />
-              )}
-              <span>{message}</span>
-            </div>
-          )}
+              {/* Submit */}
+              <button
+                type="submit"
+                className={`submit-button ${isLoading ? "loading" : ""}`}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="spinner"></span>
+                    Creating Account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </form>
 
-          {/* Login Link */}
-          <p className="login-link">
-            Already have an account?{" "}
-            <a href="/login">Sign in</a>
-          </p>
+            {/* Message */}
+            {message && (
+              <div className={`message ${messageType === "success" ? "success" : "error"}`}>
+                {messageType === "success" ? (
+                  <CheckCircle size={18} className="message-icon" />
+                ) : (
+                  <AlertCircle size={18} className="message-icon" />
+                )}
+                <span>{message}</span>
+              </div>
+            )}
+
+            {/* Login Link */}
+            <p className="login-link">
+              Already have an account?{" "}
+              <a href="/login">Sign in</a>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
