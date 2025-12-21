@@ -667,6 +667,11 @@ app.put("/api/volunteer/deliver/:id", async (req, res) => {
   }
 });
 
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", time: new Date() });
+});
+
 // ✅ START SERVER
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
