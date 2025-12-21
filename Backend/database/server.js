@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 // Routes
 import donationRoutes from "./routes/donationRoutes.js";
 import volunteerRoutes from "./routes/volunteerRoutes.js";
+import authRoutes from "./routes/authRoutes.js"
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 // Mount routes
 app.use("/api/donations", donationRoutes);
 app.use("/api/volunteer", volunteerRoutes);
+app.use("/api/auth", authRoutes)
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "OK", time: new Date() });
