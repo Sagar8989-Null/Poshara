@@ -249,7 +249,7 @@ export default function VolDash() {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:5000/api/volunteer/accepted");
+      const res = await fetch("https://poshara.onrender.com/api/volunteer/accepted");
       if (!res.ok) throw new Error("Failed to fetch donations");
       const data = await res.json();
       setDonations(data);
@@ -289,7 +289,7 @@ export default function VolDash() {
   const handleAccept = async (id) => {
     try {
       if (!volunteerId) return alert("Please log in first!");
-      const res = await fetch(`http://localhost:5000/api/volunteer/accept/${id}`, {
+      const res = await fetch(`https://poshara.onrender.com/api/volunteer/accept/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ volunteer_id: volunteerId }),
@@ -306,7 +306,7 @@ export default function VolDash() {
   // ✅ Mark as delivered
   const handleDeliver = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/volunteer/deliver/${id}`, {
+      const res = await fetch(`https://poshara.onrender.com/api/volunteer/deliver/${id}`, {
         method: "PUT",
       });
       if (!res.ok) throw new Error("Failed to update delivery");

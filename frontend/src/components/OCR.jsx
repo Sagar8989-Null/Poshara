@@ -52,7 +52,7 @@ const OCR = ({ onExtractedData }) => {
     formData.append('image', file);
 
     try {
-      const response = await fetch('http://localhost:5000/api/ocr', {
+      const response = await fetch('https://poshara.onrender.com/api/ocr', {
         method: 'POST',
         body: formData,
       });

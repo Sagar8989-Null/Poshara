@@ -9,7 +9,7 @@ const NgoDashMap = ({ donationId }) => {
 
     const fetchDetails = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/donations/${donationId}/details`);
+        const res = await fetch(`https://poshara.onrender.com/api/donations/${donationId}/details`);
         const data = await res.json();
 
         if (!res.ok) throw new Error(data.error || "Failed to fetch map data");
