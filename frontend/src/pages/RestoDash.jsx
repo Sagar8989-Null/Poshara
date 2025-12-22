@@ -348,7 +348,7 @@ function RestoDash() {
       const parsedUser = userData ? JSON.parse(userData) : null;
       const restaurantId = parsedUser?.user_id || 1;
 
-      const response = await fetch(`https://poshara.onrender.com/api/donations?restaurant_id=${restaurantId}`);
+      const response = await fetch(`${BackendUrl}/api/donations?restaurant_id=${restaurantId}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Failed to fetch donations");
 
@@ -392,7 +392,7 @@ function RestoDash() {
   const handleDeleteDonation = async (id) => {
     if (!window.confirm("Are you sure you want to delete this donation?")) return;
     try {
-      const response = await fetch(`https://poshara.onrender.com/api/donations/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${BackendUrl}/api/donations/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error("Failed to delete donation");
       setDonations(donations.filter(d => d.id !== id));
       alert("Donation deleted successfully!");
@@ -434,7 +434,7 @@ function RestoDash() {
         status: 'available'
       };
 
-      const res = await fetch('https://poshara.onrender.com/api/donations', {
+      const res = await fetch(`${BackendUrl}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(donationData)

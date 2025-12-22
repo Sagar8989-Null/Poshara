@@ -71,7 +71,7 @@ const BaseMap = ({ donationId, role }) => {
     const fetchDonationDetails = async () => {
       try {
         const res = await fetch(
-          `https://poshara.onrender.com/api/donations/${donationId}/details`
+          `${BackendUrl}/api/donations/${donationId}/details`
         );
         const data = await res.json();
         if (res.ok) setDonationDetails(data);

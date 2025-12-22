@@ -321,7 +321,7 @@ export default function NgoDash() {
   //       min_servings: filters.servings,
   //     }).toString();
 
-  //     const res = await fetch(`https://poshara.onrender.com/api/donations/available?${query}`);
+  //     const res = await fetch(`${BackendUrl}/api/donations/available?${query}`);
   //     const data = await res.json();
   //     if (!res.ok) throw new Error(data.error || "Failed to fetch donations");
   //     setDonations(data);
@@ -364,8 +364,8 @@ export default function NgoDash() {
 
       // Fetch both available and accepted
       const [availableRes, acceptedRes] = await Promise.all([
-        fetch(`https://poshara.onrender.com/api/donations/available?${query}`),
-        fetch(`https://poshara.onrender.com/api/donations/accepted?ngo_lat=${user.latitude}&ngo_lon=${user.longitude}`),
+        fetch(`${BackendUrl}/api/donations/available?${query}`),
+        fetch(`${BackendUrl}/api/donations/accepted?ngo_lat=${user.latitude}&ngo_lon=${user.longitude}`),
       ]);
 
       const availableData = await availableRes.json();
@@ -397,7 +397,7 @@ export default function NgoDash() {
   const handleAccept = async (donationId) => {
     try {
       if (!user?.user_id) return alert("Please log in as an NGO.");
-      const res = await fetch(`https://poshara.onrender.com/api/donations/${donationId}/accept`, {
+      const res = await fetch(`${BackendUrl}/api/donations/${donationId}/accept`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ngo_id: user.user_id }),

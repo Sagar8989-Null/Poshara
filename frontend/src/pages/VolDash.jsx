@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
 const socket = io("http://localhost:3000"); // ✅ Adjust if backend runs elsewhere
+const BackendUrl = import.meta.env.VITE_API_URL;
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ isOpen, onClose, user, navigate }) {
@@ -249,7 +250,7 @@ export default function VolDash() {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://poshara.onrender.com/api/volunteer/accepted");
+      const res = await fetch(`${BackendUrl}/api/volunteer/accepted`);
       if (!res.ok) throw new Error("Failed to fetch donations");
       const data = await res.json();
       setDonations(data);
@@ -289,7 +290,7 @@ export default function VolDash() {
   const handleAccept = async (id) => {
     try {
       if (!volunteerId) return alert("Please log in first!");
-      const res = await fetch(`https://poshara.onrender.com/api/volunteer/accept/${id}`, {
+      const res = await fetch(`${BackendUrl}/api/volunteer/accept/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ volunteer_id: volunteerId }),
@@ -306,7 +307,7 @@ export default function VolDash() {
   // ✅ Mark as delivered
   const handleDeliver = async (id) => {
     try {
-      const res = await fetch(`https://poshara.onrender.com/api/volunteer/deliver/${id}`, {
+      const res = await fetch(`${BackendUrl}/api/volunteer/deliver/${id}`, {
         method: "PUT",
       });
       if (!res.ok) throw new Error("Failed to update delivery");
