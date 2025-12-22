@@ -41,8 +41,6 @@ const corsOptions = {
   credentials: true,
 };
 
-
-
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions)); // 🔥 REQUIRED for preflight
 app.use(express.json());
