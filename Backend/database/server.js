@@ -14,26 +14,51 @@ dotenv.config();
 const app = express();
 const server = http.createServer(app);
 const Frontend_URL= process.env.Frontend_URL;
+const normalizeOrigin = (origin) => 
+  origin?.replace(/\/$/, ""); // remove trailing slash
+
+
+const allowedOrigins = [
+  normalizeOrigin(process.env.Frontend_URL),
+  "http://localhost:5173",
+].filter(Boolean); // removes undefined
+
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, true); // ❗ allow but do NOT expose origin
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
 
 
-
-app.use(cors({
-  origin: Frontend_URL, // replace with frontend domain in prod
-  methods: ["GET", "POST", "PUT", "DELETE"],
-}));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // 🔥 REQUIRED for preflight
 app.use(express.json());
 
 
 
 
 const io = new Server(server, {
-   transports: ["websocket"],
+  transports: ["websocket"],
   cors: {
-    origin: Frontend_URL, // replace with frontend URL
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
+
 
 io.on("connection", (socket) => {
   console.log(`🟢 Socket connected: ${socket.id}`);
