@@ -13,12 +13,13 @@ dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
+const Frontend_URL= process.env.Frontend_URL;
 
 
 
 
 app.use(cors({
-  origin: "https://poshara.netlify.app/", // replace with frontend domain in prod
+  origin: Frontend_URL, // replace with frontend domain in prod
   methods: ["GET", "POST", "PUT", "DELETE"],
 }));
 app.use(express.json());
@@ -27,8 +28,9 @@ app.use(express.json());
 
 
 const io = new Server(server, {
+   transports: ["websocket"],
   cors: {
-    origin: "https://poshara.netlify.app/", // replace with frontend URL
+    origin: Frontend_URL, // replace with frontend URL
     methods: ["GET", "POST"],
   },
 });
