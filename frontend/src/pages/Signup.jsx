@@ -5,6 +5,7 @@ import "../CSS/Auth.css";
 import Navbar from "../components/Navbar";
 
 function Signup() {
+  const BackendUrl = import.meta.env.VITE_API_URL;
   const [formData, setFormData] = useState({
     name: "",
     email: "",

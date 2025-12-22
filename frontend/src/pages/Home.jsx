@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "../CSS/Home.css";
-import Slider from "../components/slider";
+import Slider from "../components/Slider";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar"
 

@@ -13,6 +13,7 @@ const OCR = ({ onExtractedData }) => {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+  const BackendUrl = import.meta.env.VITE_API_URL;
 
 
   const handleImageSelect = (e) => {

@@ -3,6 +3,7 @@ import BaseMap from "./BaseMap";
 
 const NgoDashMap = ({ donationId }) => {
   const [locations, setLocations] = useState(null);
+  const BackendUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     if (!donationId) return;

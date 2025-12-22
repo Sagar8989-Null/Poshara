@@ -6,6 +6,7 @@ import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import io from "socket.io-client";
 
 const BaseMap = ({ donationId, role }) => {
+  const BackendUrl = import.meta.env.VITE_API_URL;
   const mapRef = useRef(null);
   const [map, setMap] = useState(null);
   const routingControlRef = useRef(null);

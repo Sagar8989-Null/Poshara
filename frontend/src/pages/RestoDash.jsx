@@ -11,7 +11,7 @@ import {
 
 
 const socket = io("http://localhost:3000"); // Adjust backend URL if different
-
+const BackendUrl = import.meta.env.VITE_API_URL;
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ formData, handleChange, handleOCRExtractedData, handleSubmit, handleCancel, isOpen, onClose }) {
