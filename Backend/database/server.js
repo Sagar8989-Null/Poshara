@@ -15,23 +15,41 @@ const app = express();
 const server = http.createServer(app);
 const Frontend_URL= process.env.Frontend_URL;
 
+const allowedOrigins = [
+  process.env.Frontend_URL,      // https://poshara.netlify.app
+  "http://localhost:5173",       // local dev
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow server-to-server & tools like curl
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS not allowed"), false);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
 
-
-app.use(cors({
-  origin: Frontend_URL, // replace with frontend domain in prod
-  methods: ["GET", "POST", "PUT", "DELETE"],
-}));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // 🔥 REQUIRED for preflight
 app.use(express.json());
 
 
 
 
 const io = new Server(server, {
-   transports: ["websocket"],
+  transports: ["websocket"],
   cors: {
-    origin: Frontend_URL, // replace with frontend URL
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
 });
 
