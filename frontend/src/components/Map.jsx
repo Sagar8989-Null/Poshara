@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import io from 'socket.io-client';
+import socket from '../socket'
 import '../CSS/Map.css';
 
 const AnnaPurnaMap = () => {
@@ -19,7 +19,6 @@ const AnnaPurnaMap = () => {
   const [hotelMarkers, setHotelMarkers] = useState({});
   const [ngoMarkers, setNgoMarkers] = useState({});
   const [userMarkers, setUserMarkers] = useState({});
-  const socket = useRef(null);
   const BackendUrl = import.meta.env.VITE_API_URL;
 
   // Fix: Set up default Leaflet icons to prevent broken fallbacks
@@ -53,9 +52,6 @@ const AnnaPurnaMap = () => {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "AnnaPurna" }).addTo(leafletMap);
     setMap(leafletMap);
 
-    // Initialize socket
-    socket.current = io(`${BackendUrl}`); // Explicitly connect to server port
-
     // Fetch data from server
     fetch(`${BackendUrl}`)
       .then(response => response.json())
@@ -75,7 +71,7 @@ const AnnaPurnaMap = () => {
       navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          socket.current.emit("send-location", { latitude, longitude });
+          socket.emit("send-location", { latitude, longitude });
         },
         (error) => console.error(error),
         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
@@ -83,7 +79,7 @@ const AnnaPurnaMap = () => {
     }
 
     // Socket listeners
-    socket.current.on("recieve-location", (data) => {
+    socket.on("recieve-location", (data) => {
       const { id, latitude, longitude } = data;
       setLatestLatitude(latitude);
       setLatestLongitude(longitude);
@@ -104,7 +100,7 @@ const AnnaPurnaMap = () => {
       setUserCount(prev => prev + 1);
     });
 
-    socket.current.on("user-disconnected", (id) => {
+    socket.on("user-disconnected", (id) => {
       setUserMarkers(prev => {
         if (prev[id]) {
           leafletMap.removeLayer(prev[id]);
@@ -122,8 +118,8 @@ const AnnaPurnaMap = () => {
       if (leafletMap) {
         leafletMap.remove();
       }
-      if (socket.current) {
-        socket.current.disconnect();
+      if (socket) {
+        socket.disconnect();
       }
     };
   }, []);
@@ -179,8 +175,8 @@ const AnnaPurnaMap = () => {
     }
   };
 
-  return (  
-      <div id="map" ref={mapRef} style={{ height: '100%', width: '100%' }}></div>
+  return (
+    <div id="map" ref={mapRef} style={{ height: '100%', width: '100%' }}></div>
   );
 };
 

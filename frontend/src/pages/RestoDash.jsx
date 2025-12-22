@@ -4,14 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { Menu, X } from 'lucide-react';
 import OCR from '../components/OCR';
 import RestoDashMap from '../components/RestoDashMap';
-import io from "socket.io-client";
+import socket from '../socket';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 
 
 const BackendUrl = import.meta.env.VITE_API_URL;
-const socket = io(`${BackendUrl}`); // Adjust backend URL if different
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ formData, handleChange, handleOCRExtractedData, handleSubmit, handleCancel, isOpen, onClose }) {

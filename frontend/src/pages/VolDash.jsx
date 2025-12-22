@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../CSS/VolDash.css";
 import { CheckCircle, MapPin, Truck, Clock, Loader2, Menu, X } from "lucide-react";
 import VolunteerDashMap from "../components/VolunteerDashMap";
-import io from "socket.io-client";
+import socket from '../socket';
 import { useNavigate } from "react-router-dom";
 
 const BackendUrl = import.meta.env.VITE_API_URL;
-const socket = io(`${BackendUrl}`); // ✅ Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ isOpen, onClose, user, navigate }) {

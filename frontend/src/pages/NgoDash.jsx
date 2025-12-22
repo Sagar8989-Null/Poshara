@@ -2,11 +2,10 @@ import React, { useState, useEffect } from "react";
 import "../CSS/NgoDash.css";
 import { Menu, Leaf, Box, Users, X } from "lucide-react";
 import NgoDashMap from "../components/NgoDashMap";
-import io from "socket.io-client";
+import socket from '../socket'
 import { useNavigate } from "react-router-dom";
 
 const BackendUrl = import.meta.env.VITE_API_URL;
-const socket = io(`${BackendUrl}`); // Adjust if backend runs elsewhere
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
   const { foodVariety, foodCategory, servings } = filters;
