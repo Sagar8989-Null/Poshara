@@ -57,7 +57,7 @@ const BaseMap = ({ donationId, role }) => {
     setMap(leafletMap);
 
     // Initialize socket connection only once
-    socket.current = io("http://localhost:3000");
+    socket.current = io(`${BackendUrl}`);
 
     return () => {
       leafletMap.remove();

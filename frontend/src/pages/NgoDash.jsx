@@ -5,8 +5,8 @@ import NgoDashMap from "../components/NgoDashMap";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
-const socket = io("http://localhost:3000"); // Adjust if backend runs elsewhere
 const BackendUrl = import.meta.env.VITE_API_URL;
+const socket = io(`${BackendUrl}`); // Adjust if backend runs elsewhere
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ filters, setFilters, applyFilters, isOpen, onClose }) {
   const { foodVariety, foodCategory, servings } = filters;

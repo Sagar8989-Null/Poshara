@@ -5,8 +5,8 @@ import VolunteerDashMap from "../components/VolunteerDashMap";
 import io from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 
-const socket = io("http://localhost:3000"); // ✅ Adjust if backend runs elsewhere
 const BackendUrl = import.meta.env.VITE_API_URL;
+const socket = io(`${BackendUrl}`); // ✅ Adjust if backend runs elsewhere
 
 /* ---------------------------- Sidebar Component ---------------------------- */
 function Sidebar({ isOpen, onClose, user, navigate }) {

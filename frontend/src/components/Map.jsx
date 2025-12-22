@@ -20,6 +20,7 @@ const AnnaPurnaMap = () => {
   const [ngoMarkers, setNgoMarkers] = useState({});
   const [userMarkers, setUserMarkers] = useState({});
   const socket = useRef(null);
+  const BackendUrl = import.meta.env.VITE_API_URL;
 
   // Fix: Set up default Leaflet icons to prevent broken fallbacks
   useEffect(() => {
@@ -53,10 +54,10 @@ const AnnaPurnaMap = () => {
     setMap(leafletMap);
 
     // Initialize socket
-    socket.current = io('http://localhost:3000'); // Explicitly connect to server port
+    socket.current = io(`${BackendUrl}`); // Explicitly connect to server port
 
     // Fetch data from server
-    fetch('http://localhost:3000/data')
+    fetch(`${BackendUrl}`)
       .then(response => response.json())
       .then(data => {
         setAppData(data);
