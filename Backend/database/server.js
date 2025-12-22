@@ -41,6 +41,26 @@ const corsOptions = {
   credentials: true,
 };
 
+const allowedOrigins = [
+  process.env.Frontend_URL,      // https://poshara.netlify.app
+  "http://localhost:5173",       // local dev
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow server-to-server & tools like curl
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("CORS not allowed"), false);
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
 
 
 app.use(cors(corsOptions));
