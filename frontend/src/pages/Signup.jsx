@@ -9,12 +9,19 @@ function Signup() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
     role: "volunteer",
+    organizationName: "",
+    address: "",
+    foodType: "",
+    capacityPerDay: "",
     latitude: "",
-    longitude: ""
+    longitude: "",
+    agree: false
   });
+
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("");
@@ -79,7 +86,7 @@ function Signup() {
 
   return (
     <>
-    <Navbar/>
+      <Navbar />
       <div className="signup-page">
         <div className="signup-container">
           <div className="signup-card">
@@ -185,6 +192,92 @@ function Signup() {
                   />
                 </div>
               )}
+
+              {/* Phone */}
+              <div className="input-group">
+                <div className="input-icon" />
+                <input
+                  type="tel"
+                  name="phone"
+                  placeholder="Phone Number"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              {/* Organization */}
+              {formData.role !== "volunteer" && (
+                <div className="input-group">
+                  <Building2 className="input-icon" />
+                  <input
+                    type="text"
+                    name="organizationName"
+                    placeholder="Organization Name"
+                    value={formData.organizationName}
+                    onChange={handleChange}
+                    className="input-field"
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Address */}
+              <div className="input-group">
+                <div className="input-icon" />
+                <input
+                  type="text"
+                  name="address"
+                  placeholder="Address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="input-field"
+                  required
+                />
+              </div>
+
+              {/* Restaurant only */}
+              {formData.role === "restaurant" && (
+                <div className="input-group">
+                  <select
+                    name="foodType"
+                    value={formData.foodType}
+                    onChange={handleChange}
+                    className="select-field"
+                  >
+                    <option value="">Food Type</option>
+                    <option value="veg">Vegetarian</option>
+                    <option value="non-veg">Non-Vegetarian</option>
+                    <option value="both">Both</option>
+                  </select>
+                </div>
+              )}
+
+              {/* NGO only */}
+              {formData.role === "ngo" && (
+                <div className="input-group">
+                  <input
+                    type="number"
+                    name="capacityPerDay"
+                    placeholder="Meals capacity per day"
+                    value={formData.capacityPerDay}
+                    onChange={handleChange}
+                    className="input-field"
+                  />
+                </div>
+              )}
+
+              {/* Terms */}
+              <label className="terms">
+                <input
+                  type="checkbox"
+                  checked={formData.agree}
+                  onChange={(e) => setFormData({ ...formData, agree: e.target.checked })}
+                  required
+                />
+                I agree to Terms & Privacy Policy
+              </label>
 
               {/* Submit */}
               <button

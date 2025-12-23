@@ -71,6 +71,7 @@ export default function Login() {
       <div className="login-page">
         <div className="login-container">
           <div className="login-card">
+        <h2 className="login-title">Welcome Back</h2>
             {/* Form */}
             <form onSubmit={handleSubmit} className="login-form">
               {/* Email Input */}
@@ -107,6 +108,13 @@ export default function Login() {
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
+              </div>
+
+              <div className="extra-options">
+                <label>
+                  <input type="checkbox" /> Remember me
+                </label>
+                <a href="/forgot-password">Forgot password?</a>
               </div>
 
               {/* Submit Button */}
