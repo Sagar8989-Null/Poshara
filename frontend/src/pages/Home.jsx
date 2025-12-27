@@ -155,7 +155,7 @@ export default function App() {
           <div className="mission-grid">
             <div className="mission-card observe fade-in-up delay-200">
               <div className="mission-icon mission-icon-1 observe float">
-                <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
+                <svg className="icon" viewBox="0 0 24 24">
                   <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                   <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
@@ -168,7 +168,7 @@ export default function App() {
 
             <div className="mission-card observe fade-in-up delay-400">
               <div className="mission-icon mission-icon-2 observe float" style={{ animationDelay: '0.3s' }}>
-                <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
+                <svg className="icon" viewBox="0 0 24 24">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
                   <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -183,7 +183,7 @@ export default function App() {
 
             <div className="mission-card observe fade-in-up delay-500">
               <div className="mission-icon mission-icon-3 observe float" style={{ animationDelay: '0.6s' }}>
-                <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
+                <svg className="icon" viewBox="0 0 24 24">
                   <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                 </svg>
               </div>
@@ -282,7 +282,7 @@ export default function App() {
           <div className="steps-grid">
             <div className="step-card observe fade-in-up delay-200">
               <div className="step-icon step-icon-1 observe bounce">
-                <svg className="icon" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
+                <svg className="icon" viewBox="0 0 24 24">
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
@@ -296,8 +296,8 @@ export default function App() {
             </div>
 
             <div className="step-card observe fade-in-up delay-300">
-              <div className="step-icon step-icon-2 observe bounce" style={{ animationDelay: '0.3s' }}>
-                <svg className="icon" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
+              <div className="step-icon step-icon-2 observe bounce" >
+                <svg className="icon" viewBox="0 0 24 24">
                   <rect x="1" y="3" width="15" height="13"></rect>
                   <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
                   <circle cx="5.5" cy="18.5" r="2.5"></circle>
@@ -314,7 +314,7 @@ export default function App() {
 
             <div className="step-card observe fade-in-up delay-400">
               <div className="step-icon step-icon-3 observe bounce" style={{ animationDelay: '0.6s' }}>
-                <svg className="icon icon-fill" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
+                <svg className="icon icon-fill" viewBox="0 0 24 24" >
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
               </div>

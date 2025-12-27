@@ -1,7 +1,14 @@
+/* PC screen */
 :root {
   --font-weight-medium: 500;
   --font-weight-normal: 400;
   --title-size: 3.75rem;
+}
+
+/* Mobile view */
+:root {
+  --mobile-title-size: 2.5rem;
+
 }
 
 * {
@@ -10,7 +17,7 @@
   box-sizing: border-box;
 }
 
-html{
+html {
   scroll-behavior: smooth;
 }
 
@@ -294,14 +301,37 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-.delay-100 { animation-delay: 0.1s; }
-.delay-200 { animation-delay: 0.2s; }
-.delay-300 { animation-delay: 0.3s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-500 { animation-delay: 0.5s; }
-.delay-600 { animation-delay: 0.6s; }
-.delay-700 { animation-delay: 0.7s; }
-.delay-800 { animation-delay: 0.8s; }
+.delay-100 {
+  animation-delay: 0.1s;
+}
+
+.delay-200 {
+  animation-delay: 0.2s;
+}
+
+.delay-300 {
+  animation-delay: 0.3s;
+}
+
+.delay-400 {
+  animation-delay: 0.4s;
+}
+
+.delay-500 {
+  animation-delay: 0.5s;
+}
+
+.delay-600 {
+  animation-delay: 0.6s;
+}
+
+.delay-700 {
+  animation-delay: 0.7s;
+}
+
+.delay-800 {
+  animation-delay: 0.8s;
+}
 
 
 /* .delay-200 {
@@ -459,7 +489,7 @@ nav {
   gap: 16px;
 }
 
-.hero-buttons a:hover{
+.hero-buttons a:hover {
   color: #ffffff;
 }
 
@@ -680,6 +710,11 @@ nav {
   color: white;
   margin-bottom: 24px;
   transition: transform 0.3s;
+}
+
+.mission-card .icon {
+  height: 32px;
+  width: 32px;
 }
 
 .mission-card:hover .mission-icon {
@@ -1329,6 +1364,7 @@ footer {
 }
 
 /* Icons */
+
 .icon {
   width: 24px;
   height: 24px;
@@ -1338,6 +1374,12 @@ footer {
   stroke-linejoin: round;
   fill: none;
 }
+
+.step-card .icon {
+  height: 40px;
+  width: 40px;
+}
+
 
 .icon-fill {
   fill: currentColor;
@@ -1405,19 +1447,112 @@ footer {
 }
 
 @media (max-width: 767px) {
+
+  .logo-circle {
+    width: 30px;
+    height: 30px;
+  }
+
+  .logo-text {
+    font-size: 1.5rem;
+  }
+
+  .nav-btn {
+    font-size: 0.8rem;
+  }
+
   .hero-title {
-    font-size: var(--title-size);
+    font-size: var(--mobile-title-size);
   }
 
-  .section-title {
-    font-size: 2rem;
+  .hero-content {
+    padding-top: 20px;
+    padding-bottom: 60px;
   }
 
-  .cta-heading {
-    font-size: 2rem;
+  .hero-description {
+    font-size: 1rem;
+  }
+
+  .hero-buttons {
+    font-size: 0.9rem;
   }
 
   .hero-stats {
-    flex-wrap: wrap;
+    margin-top: 30px;
+  }
+
+  .section-title {
+    font-size: var(--mobile-title-size);
+  }
+
+  .mission-card {
+    padding: 20px;
+  }
+
+  .mission-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+  }
+
+  .mission-card .icon {
+    height: 20px;
+    width: 20px;
+  }
+
+  .step-card {
+    padding: 20px;
+    font-size: 0.8rem;
+  }
+
+  .step-number {
+    height: 30px;
+    width: 30px;
+  }
+
+  .step-icon {
+    height: 40px;
+    width: 40px;
+  }
+
+  .step-card .icon {
+    height: 20px;
+    width: 20px;
+  }
+
+  .cta-title {
+    /* font-size: 1.5rem; */
+    font-weight: var(--font-weight-normal);
+  }
+
+  .cta-description {
+    font-size: 1rem;
+    font-weight: var(--font-weight-normal);
+  }
+  
+  .cta-image {
+    height: 50%;
+  }
+
+  .cta-heading{
+    font-size: var(--mobile-title-size);
+  }
+
+  .cta-text{
+    font-size: 0.8rem;
+  }
+
+  .email-icon {
+    height: 30px;
+    width: 30px;
+  }
+
+  .email-button{
+    padding: 0.6em 1.2em;;
+  }
+
+  .email-button span{
+    display: none;
   }
 }
