@@ -49,7 +49,7 @@ const Addresslatlong = ({ onLocationChange }) => {
 
     return (
         <>
-            <MapContainer center={position} zoom={15} style={{ height: '500px', width: '100%' }}>
+            <MapContainer center={position} zoom={15}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />

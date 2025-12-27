@@ -1,6 +1,6 @@
 /* AUTH PAGES SHARED */
 
-.content{
+.content {
   background: linear-gradient(to bottom right, #fb923c, #ec4899, #9333ea);
   height: 100vh;
 }
@@ -16,10 +16,13 @@
   height: calc(100% - 105px);
 }
 
-.login-container,
+.login-container{
+  width: 700px;
+}
 .signup-container {
-  width: 100%;
-  max-width: 420px;
+  width: 700px;
+  height: 750px;
+  /* max-width: 420px;  */
 }
 
 .login-card,
@@ -42,8 +45,8 @@
   opacity: 0;
 } */
 
-button:focus{
-  outline:none
+button:focus {
+  outline: none
 }
 
 select,
@@ -65,7 +68,7 @@ select:open::picker-icon {
   appearance: none;
 } */
 
-option{
+option {
   background-color: white;
   color: #6b7280;
   /* border-radius: 5px; */
@@ -87,6 +90,11 @@ option{
   background: linear-gradient(to right, #fb923c, #ec4899);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.leftright-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 /* Inputs */
@@ -115,6 +123,8 @@ option{
   background-color: white;
   color: #9ca3af;
 }
+.select-field {
+  width: 300px;}
 
 .input-field:focus,
 .select-field:focus {
@@ -136,6 +146,22 @@ option{
   border: none;
   color: #6b7280;
   cursor: pointer;
+}
+
+option {
+  background-color: #ffffff;
+  background: #ffffff;
+  background-image: none;
+}
+
+option:nth-child(1) {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+option:nth-child(3) {
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 /* Buttons */
@@ -172,14 +198,16 @@ option{
 .spinner {
   width: 18px;
   height: 18px;
-  border: 3px solid rgba(255,255,255,0.4);
+  border: 3px solid rgba(255, 255, 255, 0.4);
   border-top: 3px solid white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Messages */
@@ -225,36 +253,37 @@ option{
   text-decoration: underline;
 }
 
-.extra-options{
+.extra-options {
   justify-content: space-around;
   display: flex;
 }
 
 input[type="checkbox"] {
-width: 20px;
-height: 20px;
-top: 4px;
-appearance: none; /* Remove default styles */
-background-color: #ffffff;
-border: 2px solid #ccc;
-border-radius: 4px;
-cursor: pointer;
-position: relative;
+  width: 20px;
+  height: 20px;
+  top: 4px;
+  appearance: none;
+  /* Remove default styles */
+  background-color: #ffffff;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
 }
 
 input[type="checkbox"]:checked::after {
-content: "";
-position: absolute;
-/*top: 4px; */
-left: 4px;
-width: 6px;
-height: 12px;
-border: solid rgb(0, 0, 0);
-border-width: 0 2px 2px 0;
-transform: rotate(45deg);
+  content: "";
+  position: absolute;
+  /*top: 4px; */
+  left: 4px;
+  width: 6px;
+  height: 12px;
+  border: solid rgb(0, 0, 0);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-#inputcheckbox{
+#inputcheckbox {
   background-color: white;
 }
 
@@ -264,14 +293,17 @@ transform: rotate(45deg);
   margin: 16px 0;
 }
 
-.leaflet-container{
-border-radius: 10px;
+.leaflet-container {
+  border-radius: 10px;
+  height: 300px;
+  width: 300px;
 }
 
 .map-label {
   font-size: 0.85rem;
   color: #6b7280;
   margin-bottom: 8px;
+  text-align: left;
 }
 
 /* Animation */
@@ -281,6 +313,7 @@ border-radius: 10px;
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

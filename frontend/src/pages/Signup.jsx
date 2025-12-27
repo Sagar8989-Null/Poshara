@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState} from "react";
 import { Mail, Lock, Eye, EyeOff, User, MapPin, Building2, AlertCircle, CheckCircle } from "lucide-react";
 import Addresslatlong from "../components/signupMap";
 import "../CSS/Auth.css";
 import Navbar from "../components/Navbar";
+import { Link } from "react-router-dom";
 
 function Signup() {
   const BackendUrl = import.meta.env.VITE_API_URL;
@@ -93,181 +94,189 @@ function Signup() {
             <h2 className="signup-title">Create Account</h2>
 
             <form onSubmit={handleSubmit} className="signup-form">
-              {/* Name */}
-              <div className="input-group">
-                <User className="input-icon" />
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Full Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                  disabled={isLoading} />
-              </div>
+              <div className="leftright-container">
+                <div className="signupleft">
+                  {/* Name */}
+                  <div className="input-group">
+                    <User className="input-icon" />
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Full Name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="input-field"
+                      required
+                      disabled={isLoading} />
+                  </div>
 
-              {/* Email */}
-              <div className="input-group">
-                <Mail className="input-icon" />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                  disabled={isLoading} />
-              </div>
+                  {/* Email */}
+                  <div className="input-group">
+                    <Mail className="input-icon" />
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Email Address"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="input-field"
+                      required
+                      disabled={isLoading} />
+                  </div>
 
-              {/* Password */}
-              <div className="input-group">
-                <Lock className="input-icon" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field password-field"
-                  required
-                  disabled={isLoading} />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="toggle-password"
-                  disabled={isLoading}
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+                  {/* Password */}
+                  <div className="input-group">
+                    <Lock className="input-icon" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      placeholder="Password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      className="input-field password-field"
+                      required
+                      disabled={isLoading} />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="toggle-password"
+                      disabled={isLoading}
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
 
-              {/* Confirm Password */}
-              <div className="input-group">
-                <Lock className="input-icon" />
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  placeholder="Confirm Password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input-field password-field"
-                  required
-                  disabled={isLoading} />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="toggle-password"
-                  disabled={isLoading}
-                >
-                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
+                  {/* Confirm Password */}
+                  <div className="input-group">
+                    <Lock className="input-icon" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      placeholder="Confirm Password"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      className="input-field password-field"
+                      required
+                      disabled={isLoading} />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="toggle-password"
+                      disabled={isLoading}
+                    >
+                      {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {/* Organization */}
+                  {formData.role !== "volunteer" && (
+                    <div className="input-group">
+                      <Building2 className="input-icon" />
+                      <input
+                        type="text"
+                        name="organizationName"
+                        placeholder="Organization Name"
+                        value={formData.organizationName}
+                        onChange={handleChange}
+                        className="input-field"
+                        required
+                      />
+                    </div>
+                  )}
 
-              {/* Role */}
-              <div className="input-group">
-                <Building2 className="input-icon" />
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="select-field"
-                  disabled={isLoading}
-                >
-                  <option value="volunteer">Volunteer</option>
-                  <option value="ngo">NGO</option>
-                  <option value="restaurant">Restaurant</option>
-                </select>
-              </div>
 
-              {/* Map — show only if NGO or Restaurant */}
-              {(formData.role === "ngo" || formData.role === "restaurant") && (
-                <div className="map-wrapper-signup">
-                  <p className="map-label">Set your location:</p>
-                  <Addresslatlong
-                    onLocationChange={(lat, lng) =>
-                      setFormData({ ...formData, latitude: lat, longitude: lng })
-                    }
-                  />
+                  {/* Restaurant only */}
+                  {formData.role === "restaurant" && (
+                    <div className="input-group">
+                      <select
+                        name="foodType"
+                        value={formData.foodType}
+                        onChange={handleChange}
+                        className="select-field"
+                      >
+                        <option value="">Food Type</option>
+                        <option value="veg">Vegetarian</option>
+                        <option value="non-veg">Non-Vegetarian</option>
+                        <option value="both">Both</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* NGO only */}
+                  {formData.role === "ngo" && (
+                    <div className="input-group">
+                      <input
+                        type="number"
+                        name="capacityPerDay"
+                        placeholder="Meals capacity per day"
+                        value={formData.capacityPerDay}
+                        onChange={handleChange}
+                        className="input-field"
+                      />
+                    </div>
+                  )}
+                  {/* Phone */}
+                  <div className="input-group">
+                    <div className="input-icon" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Phone Number"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="input-field"
+                      required
+                    />
+                  </div>
                 </div>
-              )}
 
-              {/* Phone */}
-              <div className="input-group">
-                <div className="input-icon" />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone Number"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                />
+                {/* Role */}
+                <div className="signupright">
+
+                  <div className="input-group">
+                    <Building2 className="input-icon" />
+                    <select
+                      name="role"
+                      value={formData.role}
+                      onChange={handleChange}
+                      className="select-field"
+                      disabled={isLoading}
+                    >
+                      <option value="volunteer">Volunteer</option>
+                      <option value="ngo">NGO</option>
+                      <option value="restaurant">Restaurant</option>
+                    </select>
+                  </div>
+
+                  {/* Map — show only if NGO or Restaurant */}
+                  {(formData.role === "ngo" || formData.role === "restaurant") && (
+                    <div className="map-wrapper-signup">
+                      <p className="map-label">Set your location:</p>
+                      <Addresslatlong
+                        onLocationChange={(lat, lng) =>
+                          setFormData({ ...formData, latitude: lat, longitude: lng })
+                        }
+                      />
+                    </div>
+                  )}
+
+
+                  {/* Address
+                  <div className="input-group">
+                    <div className="input-icon" />
+                    <input
+                      type="text"
+                      name="address"
+                      placeholder="Address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="input-field"
+                      required
+                    />
+                  </div> */}
+
+                </div>
+
               </div>
-
-              {/* Organization */}
-              {formData.role !== "volunteer" && (
-                <div className="input-group">
-                  <Building2 className="input-icon" />
-                  <input
-                    type="text"
-                    name="organizationName"
-                    placeholder="Organization Name"
-                    value={formData.organizationName}
-                    onChange={handleChange}
-                    className="input-field"
-                    required
-                  />
-                </div>
-              )}
-
-              {/* Address */}
-              <div className="input-group">
-                <div className="input-icon" />
-                <input
-                  type="text"
-                  name="address"
-                  placeholder="Address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="input-field"
-                  required
-                />
-              </div>
-
-              {/* Restaurant only */}
-              {formData.role === "restaurant" && (
-                <div className="input-group">
-                  <select
-                    name="foodType"
-                    value={formData.foodType}
-                    onChange={handleChange}
-                    className="select-field"
-                  >
-                    <option value="">Food Type</option>
-                    <option value="veg">Vegetarian</option>
-                    <option value="non-veg">Non-Vegetarian</option>
-                    <option value="both">Both</option>
-                  </select>
-                </div>
-              )}
-
-              {/* NGO only */}
-              {formData.role === "ngo" && (
-                <div className="input-group">
-                  <input
-                    type="number"
-                    name="capacityPerDay"
-                    placeholder="Meals capacity per day"
-                    value={formData.capacityPerDay}
-                    onChange={handleChange}
-                    className="input-field"
-                  />
-                </div>
-              )}
-
               {/* Terms */}
               <label className="terms">
                 <input
@@ -276,7 +285,7 @@ function Signup() {
                   onChange={(e) => setFormData({ ...formData, agree: e.target.checked })}
                   required
                 />
-                  <span> I agree to Terms & Privacy Policy</span>
+                <span> I agree to Terms & Privacy Policy</span>
               </label>
 
               {/* Submit */}
@@ -311,7 +320,9 @@ function Signup() {
             {/* Login Link */}
             <p className="login-link">
               Already have an account?{" "}
-              <a href="/login">Sign in</a>
+              <Link to='/login'>
+                Sign in
+              </Link>
             </p>
           </div>
         </div>
