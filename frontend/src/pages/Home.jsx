@@ -10,13 +10,16 @@ export default function App() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("in-view");
-            observer.unobserve(entry.target);
-          }
+          entry.target.classList.add("in-view");
+          entry.target.classList.remove("out-view");
+        } else {
+          entry.target.classList.remove("in-view");
+          entry.target.classList.add("out-view");
+        }
         });
       },
       {
-        threshold: 0.2,
+        threshold: 0.3,
       }
     );
     
