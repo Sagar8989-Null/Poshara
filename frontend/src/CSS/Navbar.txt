@@ -204,14 +204,14 @@
   }
 }
 
-.logo-text {
+/* .logo-text {
   font-size: 40px;
   text-align: left;
   font-weight: 700;
   line-height: 1;
   padding-top: 0;
   color: #cad183;
-}
+} */
 
 .logo-underline {
   position: absolute;
@@ -290,7 +290,7 @@
   align-items: center;
 }
 
-.nav-btn {
+/* .nav-btn {
   border: none;
   outline: none;
   padding: 12px 28px;
@@ -308,7 +308,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
+} */
 
 .btn-icon {
   font-size: 1.2em;

@@ -1,13 +1,19 @@
 /* AUTH PAGES SHARED */
 
+.content{
+  background: linear-gradient(to bottom right, #fb923c, #ec4899, #9333ea);
+  height: 100vh;
+}
+
 .login-page,
 .signup-page {
-  min-height: 100vh;
-  background: linear-gradient(to bottom right, #fb923c, #ec4899, #9333ea);
+  /* min-height: 100vh; */
+  /* background: linear-gradient(to bottom right, #fb923c, #ec4899, #9333ea); */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 24px;
+  height: calc(100% - 105px);
 }
 
 .login-container,
@@ -26,7 +32,7 @@
   animation: fadeInUp 0.6s ease;
 }
 
-.login-card::before,
+/* .login-card::before,
 .signup-card::before {
   content: "";
   position: absolute;
@@ -34,7 +40,43 @@
   border-radius: 24px;
   background: linear-gradient(120deg, transparent, rgba(255,255,255,0.3), transparent);
   opacity: 0;
+} */
+
+button:focus{
+  outline:none
 }
+
+select,
+::picker(select) {
+  appearance: base-select;
+  padding-right: 5px;
+}
+
+select::picker-icon {
+  color: #999999;
+  transition: 0.4s rotate;
+}
+
+select:open::picker-icon {
+  rotate: 180deg;
+}
+
+/* option::checkmark{
+  appearance: none;
+} */
+
+option{
+  background-color: white;
+  color: #6b7280;
+  /* border-radius: 5px; */
+}
+
+/* .terms{
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+} */
 
 .login-title,
 .signup-title {
@@ -70,6 +112,8 @@
   border: 2px solid #e5e7eb;
   font-size: 0.95rem;
   transition: all 0.3s;
+  background-color: white;
+  color: #9ca3af;
 }
 
 .input-field:focus,
@@ -181,10 +225,47 @@
   text-decoration: underline;
 }
 
+.extra-options{
+  justify-content: space-around;
+  display: flex;
+}
+
+input[type="checkbox"] {
+width: 20px;
+height: 20px;
+top: 4px;
+appearance: none; /* Remove default styles */
+background-color: #ffffff;
+border: 2px solid #ccc;
+border-radius: 4px;
+cursor: pointer;
+position: relative;
+}
+
+input[type="checkbox"]:checked::after {
+content: "";
+position: absolute;
+/*top: 4px; */
+left: 4px;
+width: 6px;
+height: 12px;
+border: solid rgb(0, 0, 0);
+border-width: 0 2px 2px 0;
+transform: rotate(45deg);
+}
+
+#inputcheckbox{
+  background-color: white;
+}
+
 /* Map */
 
 .map-wrapper-signup {
   margin: 16px 0;
+}
+
+.leaflet-container{
+border-radius: 10px;
 }
 
 .map-label {

@@ -1,7 +1,31 @@
+import { useEffect } from 'react';
 import React from 'react';
-import '../CSS/Home.CSS';
+import '../CSS/Home.css';
+import { Link } from 'react-router-dom';
 
 export default function App() {
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.2,
+      }
+    );
+    
+    const elements = document.querySelectorAll(".observe");
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
@@ -16,45 +40,47 @@ export default function App() {
         {/* Navigation */}
         <nav>
           <div className="nav-container">
-            <div className="logo-container animate-fade-in-up">
+            <div className="logo-container observe slide-in-left">
               <div className="logo-circle">
                 <svg className="icon icon-fill" style={{ color: '#ec4899' }} viewBox="0 0 24 24">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
                 </svg>
               </div>
               <span className="logo-text">POSHARA</span>
             </div>
-            
-            <div className="nav-links animate-fade-in-up">
+
+            <div className="nav-links observe fade-in-up">
               <a href="#mission">Mission</a>
               <a href="#impact">Impact</a>
               <a href="#how">How It Works</a>
             </div>
-            
-            <button className="nav-btn animate-fade-in-up">Get Involved</button>
+            <Link to='/login'>
+              <button className="nav-btn observe slide-in-right">Get Involved</button>
+            </Link>
           </div>
         </nav>
 
         {/* Hero Content */}
         <div className="hero-content">
           <div className="hero-grid">
-            <div>
-              <div className="badge animate-fade-in-up delay-200">
+            <div className='display-J-L'>
+              <div className="badge observe fade-in-up delay-200">
                 <span>🌍 Fighting Food Waste Together</span>
               </div>
 
-              <h1 className="hero-title animate-fade-in-up delay-300">
-                Nourishing Communities,<br/>
+              <h1 className="hero-title observe fade-in-up delay-300">
+                Nourishing Communities,<br />
                 <span className="highlight">One Meal</span> at a Time
               </h1>
 
-              <p className="hero-description animate-fade-in-up delay-400">
-                POSHARA connects surplus food from restaurants, farms, and retailers 
-                with communities in need. Together, we're creating a world where no 
+              <p className="hero-description observe fade-in-up delay-400">
+                POSHARA connects surplus food from restaurants, farms, and retailers
+                with communities in need. Together, we're creating a world where no
                 meal goes to waste and no one goes hungry.
               </p>
 
-              <div className="hero-buttons animate-fade-in-up delay-500">
+              <div className="hero-buttons observe fade-in-up delay-500">
+                <Link to ='/signup'>
                 <button className="btn-primary">
                   <span>Start Donating</span>
                   <svg className="icon" viewBox="0 0 24 24">
@@ -62,26 +88,27 @@ export default function App() {
                     <polyline points="12 5 19 12 12 19"></polyline>
                   </svg>
                 </button>
-                <button className="btn-secondary">Learn More</button>
+                </Link>
+                <a href="#mission" className='btn-secondary'>Learn More</a>
               </div>
 
-              <div className="hero-stats animate-fade-in delay-600">
+              <div className="hero-stats observe fade-in delay-600">
                 <div className="stat-item">
                   <div className="stat-number">250K+</div>
-                  <div className="stat-label">Meals Redistributed</div>
+                  <div className="stat-label" style={{ color: 'white' }}>Meals Redistributed</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-number">500+</div>
-                  <div className="stat-label">Partner Organizations</div>
+                  <div className="stat-label" style={{ color: 'white' }}>Partner Organizations</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-number">100+</div>
-                  <div className="stat-label">Cities Served</div>
+                  <div className="stat-label" style={{ color: 'white' }}>Cities Served</div>
                 </div>
               </div>
             </div>
 
-            <div className="hero-image-container animate-scale-in delay-400">
+            <div className="hero-image-container observe scale-in delay-400">
               <div style={{ position: 'relative' }}>
                 <img
                   src="https://images.unsplash.com/photo-1757332334664-83bff99e7a43?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080"
@@ -103,7 +130,7 @@ export default function App() {
         {/* Wave transition */}
         <div className="wave">
           <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white"/>
+            <path d="M0 120L60 110C120 100 240 80 360 70C480 60 600 60 720 65C840 70 960 80 1080 85C1200 90 1320 90 1380 90L1440 90V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="white" />
           </svg>
         </div>
       </div>
@@ -111,20 +138,20 @@ export default function App() {
       {/* Mission Section */}
       <section id="mission" className="mission-section">
         <div className="section-container">
-          <div className="section-header">
+          <div className="section-header observe fade-in-up">
             <div className="section-badge">Our Mission</div>
             <h2 className="section-title">
               Creating <span className="gradient-text">Impact</span> That Matters
             </h2>
             <p className="section-description">
-              POSHARA is on a mission to transform the way we think about food waste 
+              POSHARA is on a mission to transform the way we think about food waste
               and food insecurity. Every meal saved is a step towards a better tomorrow.
             </p>
           </div>
 
           <div className="mission-grid">
-            <div className="mission-card">
-              <div className="mission-icon mission-icon-1 animate-float">
+            <div className="mission-card observe fade-in-up delay-200">
+              <div className="mission-icon mission-icon-1 observe float">
                 <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
                   <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                   <polyline points="17 6 23 6 23 12"></polyline>
@@ -136,8 +163,8 @@ export default function App() {
               </p>
             </div>
 
-            <div className="mission-card">
-              <div className="mission-icon mission-icon-2 animate-float" style={{ animationDelay: '0.3s' }}>
+            <div className="mission-card observe fade-in-up delay-400">
+              <div className="mission-icon mission-icon-2 observe float" style={{ animationDelay: '0.3s' }}>
                 <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
@@ -151,8 +178,8 @@ export default function App() {
               </p>
             </div>
 
-            <div className="mission-card">
-              <div className="mission-icon mission-icon-3 animate-float" style={{ animationDelay: '0.6s' }}>
+            <div className="mission-card observe fade-in-up delay-500">
+              <div className="mission-icon mission-icon-3 observe float" style={{ animationDelay: '0.6s' }}>
                 <svg className="icon" viewBox="0 0 24 24" style={{ width: '32px', height: '32px' }}>
                   <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
                 </svg>
@@ -170,38 +197,38 @@ export default function App() {
       <section id="impact" className="impact-section">
         <div className="section-container">
           <div className="impact-grid">
-            <div>
+            <div className='impact-Content observe slide-in-left'>
               <div className="section-badge" style={{ background: 'linear-gradient(to right, #3b82f6, #9333ea)' }}>Real Impact</div>
               <h2 className="section-title">
                 Numbers That Tell Our <span className="gradient-text" style={{ background: 'linear-gradient(to right, #3b82f6, #9333ea)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Story</span>
               </h2>
               <p className="section-description" style={{ marginBottom: '32px' }}>
-                Every day, POSHARA makes a tangible difference in communities across the nation. 
-                Our innovative food redistribution network turns waste into opportunity, 
+                Every day, POSHARA makes a tangible difference in communities across the nation.
+                Our innovative food redistribution network turns waste into opportunity,
                 connecting those with excess to those in need.
               </p>
-              
+
               <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-value orange animate-pulse">15M</div>
+                <div className="stat-card observe fade-in delay-200">
+                  <div className="stat-value orange">15M</div>
                   <div className="stat-label">Pounds of Food Saved</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value pink animate-pulse" style={{ animationDelay: '0.2s' }}>100K</div>
+                <div className="stat-card observe fade-in delay-400">
+                  <div className="stat-value pink" style={{ animationDelay: '0.2s' }}>100K</div>
                   <div className="stat-label">Families Helped</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value green animate-pulse" style={{ animationDelay: '0.4s' }}>50M</div>
+                <div className="stat-card observe fade-in delay-600">
+                  <div className="stat-value green" style={{ animationDelay: '0.4s' }}>50M</div>
                   <div className="stat-label">CO2 Emissions Reduced</div>
                 </div>
-                <div className="stat-card">
-                  <div className="stat-value blue animate-pulse" style={{ animationDelay: '0.6s' }}>98%</div>
+                <div className="stat-card observe fade-in delay-800">
+                  <div className="stat-value blue" style={{ animationDelay: '0.6s' }}>98%</div>
                   <div className="stat-label">Food Quality Rating</div>
                 </div>
               </div>
             </div>
 
-            <div className="impact-images">
+            <div className="impact-images observe slide-in-right">
               <div className="image-col">
                 <img
                   src="https://images.unsplash.com/photo-1763570645098-371723617ee9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080"
@@ -237,9 +264,9 @@ export default function App() {
       <section id="how" className="how-it-works-section">
         <div className="decorative-bg decorative-bg-1"></div>
         <div className="decorative-bg decorative-bg-2"></div>
-        
+
         <div className="section-container" style={{ position: 'relative', zIndex: 10 }}>
-          <div className="section-header">
+          <div className="section-header observe fade-in-up">
             <div className="section-badge" style={{ background: 'linear-gradient(to right, #fb923c, #ec4899)' }}>How It Works</div>
             <h2 className="section-title">
               Simple Steps, <span className="gradient-text">Big Impact</span>
@@ -250,14 +277,14 @@ export default function App() {
           </div>
 
           <div className="steps-grid">
-            <div className="step-card">
-              <div className="step-icon step-icon-1 animate-bounce">
+            <div className="step-card observe fade-in-up delay-200">
+              <div className="step-icon step-icon-1 observe bounce">
                 <svg className="icon" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
                   <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
               </div>
-              <div className="step-number step-icon-1 animate-pulse">1</div>
+              <div className="step-number step-icon-1">1</div>
               <div className="step-label">Step 1</div>
               <h3 className="step-title">Food Donors Connect</h3>
               <p className="step-description">
@@ -265,8 +292,8 @@ export default function App() {
               </p>
             </div>
 
-            <div className="step-card">
-              <div className="step-icon step-icon-2 animate-bounce" style={{ animationDelay: '0.3s' }}>
+            <div className="step-card observe fade-in-up delay-300">
+              <div className="step-icon step-icon-2 observe bounce" style={{ animationDelay: '0.3s' }}>
                 <svg className="icon" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
                   <rect x="1" y="3" width="15" height="13"></rect>
                   <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
@@ -274,7 +301,7 @@ export default function App() {
                   <circle cx="18.5" cy="18.5" r="2.5"></circle>
                 </svg>
               </div>
-              <div className="step-number step-icon-2 animate-pulse" style={{ animationDelay: '0.2s' }}>2</div>
+              <div className="step-number step-icon-2" style={{ animationDelay: '0.2s' }}>2</div>
               <div className="step-label">Step 2</div>
               <h3 className="step-title">We Collect & Transport</h3>
               <p className="step-description">
@@ -282,13 +309,13 @@ export default function App() {
               </p>
             </div>
 
-            <div className="step-card">
-              <div className="step-icon step-icon-3 animate-bounce" style={{ animationDelay: '0.6s' }}>
+            <div className="step-card observe fade-in-up delay-400">
+              <div className="step-icon step-icon-3 observe bounce" style={{ animationDelay: '0.6s' }}>
                 <svg className="icon icon-fill" viewBox="0 0 24 24" style={{ width: '40px', height: '40px' }}>
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                 </svg>
               </div>
-              <div className="step-number step-icon-3 animate-pulse" style={{ animationDelay: '0.4s' }}>3</div>
+              <div className="step-number step-icon-3" style={{ animationDelay: '0.4s' }}>3</div>
               <div className="step-label">Step 3</div>
               <h3 className="step-title">Communities Receive</h3>
               <p className="step-description">
@@ -297,7 +324,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="cta-box">
+          <div className="cta-box observe fade-in-up delay-200">
             <img
               src="https://images.unsplash.com/photo-1628717341663-0007b0ee2597?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=1080"
               alt="Food delivery volunteer"
@@ -305,7 +332,7 @@ export default function App() {
             />
             <h3 className="cta-title">Ready to Make a Difference?</h3>
             <p className="cta-description">
-              Whether you're a business with surplus food or an organization serving communities, 
+              Whether you're a business with surplus food or an organization serving communities,
               join POSHARA today and be part of the solution.
             </p>
             <button className="cta-button">Join Our Network</button>
@@ -319,16 +346,16 @@ export default function App() {
         <div className="cta-blob cta-blob-2"></div>
 
         <div className="cta-content">
-          <h2 className="cta-heading">
-            Let's Build a Better<br/>
+          <h2 className="cta-heading observe fade-in-up">
+            Let's Build a Better<br />
             Future Together
           </h2>
-          <p className="cta-text">
-            Join thousands of businesses, organizations, and volunteers who are making 
+          <p className="cta-text observe fade-in-up">
+            Join thousands of businesses, organizations, and volunteers who are making
             a difference in their communities. Get updates, stories, and ways to get involved.
           </p>
 
-          <div className="email-form">
+          <div className="email-form observe fade-in-up delay-300">
             <svg className="email-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
               <polyline points="22,6 12,13 2,6"></polyline>
@@ -347,7 +374,7 @@ export default function App() {
             </button>
           </div>
 
-          <div className="achievements">
+          <div className="achievements observe fade-in-up delay-400 ">
             <div className="achievement">
               <div className="achievement-icon">🌟</div>
               <div className="achievement-text">Featured by Forbes</div>

@@ -1,6 +1,6 @@
 /* === GLOBAL STYLES === */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   background-color: #f9fafb;
   color:black;
 }
@@ -210,8 +210,8 @@ body {
 
 .section-title {
   margin: 0 0 1rem 0;
-  font-size: 1.3rem;
-  font-weight: 600;
+  font-size: 3.75rem;
+  font-weight: 400;
   color: #1f2937;
 }
 

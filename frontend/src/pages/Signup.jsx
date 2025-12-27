@@ -276,7 +276,7 @@ function Signup() {
                   onChange={(e) => setFormData({ ...formData, agree: e.target.checked })}
                   required
                 />
-                I agree to Terms & Privacy Policy
+                  <span> I agree to Terms & Privacy Policy</span>
               </label>
 
               {/* Submit */}

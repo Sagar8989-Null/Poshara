@@ -62,7 +62,7 @@ const Addresslatlong = ({ onLocationChange }) => {
                 </Marker>
                 <RecenterMap position={position} />
             </MapContainer>
-            <span style={{ color: "white", fontSize: "18px" }}>
+            <span style={{ color: "#6b7280", fontSize: "18px" }}>
                 {position[0].toFixed(6)} , {position[1].toFixed(6)}
             </span>
             <br />

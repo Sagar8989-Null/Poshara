@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle } from 'lucide-react';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import '../CSS/Auth.css';
 import Navbar from "../components/Navbar";
 
@@ -71,7 +71,7 @@ export default function Login() {
       <div className="login-page">
         <div className="login-container">
           <div className="login-card">
-        <h2 className="login-title">Welcome Back</h2>
+            <h2 className="login-title">Welcome Back</h2>
             {/* Form */}
             <form onSubmit={handleSubmit} className="login-form">
               {/* Email Input */}
@@ -85,12 +85,13 @@ export default function Login() {
                   disabled={isLoading}
                   className="input-field"
                   required
+                  style={{backgroundcolor:'white !important',color:"#9ca3af"}}
                 />
               </div>
 
               {/* Password Input */}
               <div className="input-group">
-                <Lock className="input-icon" />
+                <Lock className="input-icon"/>
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Password"
@@ -98,8 +99,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
                   className="input-field password-field"
-                  required
-                />
+                  required/>
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -145,7 +145,9 @@ export default function Login() {
             {/* Signup Link */}
             <p className="signup-link">
               Don't have an account?{' '}
-              <a href="/signup">Signup</a>
+              <Link to='/signup'>
+                Sign up
+              </Link>
             </p>
           </div>
         </div>

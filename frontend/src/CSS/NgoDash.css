@@ -1,6 +1,6 @@
 /* === GLOBAL STYLES === */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   background-color: #f9fafb;
   color:black;
 }
